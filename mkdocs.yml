@@ -1,0 +1,91 @@
+site_name: runqy Documentation
+site_url: https://docs.runqy.com
+site_description: Documentation for runqy - a distributed task queue system with server-driven bootstrap architecture
+site_author: Publikey
+
+repo_name: Publikey/docs.runqy.com
+repo_url: https://github.com/Publikey/docs.runqy.com
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.code.copy
+    - content.action.edit
+
+plugins:
+  - search
+  - tags
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Introduction: getting-started/index.md
+      - Quick Start: getting-started/quickstart.md
+      - Architecture: getting-started/architecture.md
+  - runqy Server:
+      - Overview: server/index.md
+      - Configuration: server/configuration.md
+      - API Reference: server/api.md
+  - runqy Worker:
+      - Overview: worker/index.md
+      - Configuration: worker/configuration.md
+      - Deployment: worker/deployment.md
+  - runqy-task (Python SDK):
+      - Overview: python-sdk/index.md
+      - Installation: python-sdk/installation.md
+      - Decorators: python-sdk/decorators.md
+      - Examples: python-sdk/examples.md
+  - Guides:
+      - Local Development: guides/local-development.md
+      - Enqueueing Tasks: guides/enqueueing-tasks.md
+      - Monitoring: guides/monitoring.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Publikey
+
+copyright: Copyright &copy; 2024-2026 Publikey
