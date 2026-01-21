@@ -38,46 +38,49 @@ This guide covers setting up a complete local development environment for runqy.
 ```bash
 mkdir runqy-dev && cd runqy-dev
 
-git clone https://github.com/Publikey/runqy-server-minimal.git
+git clone https://github.com/Publikey/runqy.git
 git clone https://github.com/Publikey/runqy-worker.git
 git clone https://github.com/Publikey/runqy-python.git
 git clone https://github.com/Publikey/test-dummy-task.git
 ```
 
-### 3. Configure and Start Server
+### 3. Start PostgreSQL (optional, for full features)
+
+=== "Docker"
+
+    ```bash
+    docker run -d --name postgres -p 5432:5432 \
+      -e POSTGRES_PASSWORD=devpassword \
+      postgres:15-alpine
+    ```
+
+=== "Skip"
+
+    PostgreSQL is optional for basic local development. The server can function with Redis-only configuration.
+
+### 4. Configure and Start Server
 
 ```bash
-cd runqy-server-minimal
+cd runqy
 
-cat > config.yml << 'EOF'
-server:
-  port: 8081
-  api_key: "dev-api-key-12345"
-redis:
-  addr: "localhost:6379"
-queues:
-  inference:
-    priority: 6
-    mode: long_running
-    deployment:
-      git_url: "file://../test-dummy-task"
-      branch: "main"
-      startup_cmd: "python python/hello_world/dummy_task.py"
-      startup_timeout_secs: 60
-  simple:
-    priority: 3
-    mode: one_shot
-    deployment:
-      git_url: "file://../test-dummy-task"
-      branch: "main"
-      startup_cmd: "python python/hello_world/simple_task.py"
-      startup_timeout_secs: 30
+# Create environment file
+cp .env.secret.sample .env.secret
+
+# Edit .env.secret with your credentials:
+cat > .env.secret << 'EOF'
+REDIS_HOST=localhost
+REDIS_PASSWORD=
+DATABASE_HOST=localhost
+DATABASE_PASSWORD=devpassword
+ASYNQ_API_KEY=dev-api-key-12345
 EOF
 
-go run .
+cd app && go run .
 ```
 
-### 4. Configure and Start Worker
+The server starts on port 3000 by default.
+
+### 5. Configure and Start Worker
 
 In a new terminal:
 
@@ -86,7 +89,7 @@ cd runqy-worker
 
 cat > config.yml << 'EOF'
 server:
-  url: "http://localhost:8081"
+  url: "http://localhost:3000"
   api_key: "dev-api-key-12345"
 worker:
   queue: "inference"

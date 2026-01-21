@@ -26,6 +26,6 @@ runqy is a task queue system where workers are stateless. They receive all confi
 
 ## Source Code
 
-- [runqy-server](https://github.com/Publikey/runqy-server-minimal)
+- [runqy-server](https://github.com/Publikey/runqy)
 - [runqy-worker](https://github.com/Publikey/runqy-worker)
 - [runqy-python](https://github.com/Publikey/runqy-python)

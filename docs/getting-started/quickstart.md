@@ -22,28 +22,23 @@ redis-server
 ## 2. Start the Server
 
 ```bash
-git clone https://github.com/Publikey/runqy-server-minimal.git
-cd runqy-server-minimal
+git clone https://github.com/Publikey/runqy.git
+cd runqy
 
-# Create config file
-cat > config.yml << 'EOF'
-server:
-  port: 8081
-  api_key: "dev-api-key-12345"
-redis:
-  addr: "localhost:6379"
-queues:
-  inference:
-    priority: 6
-    deployment:
-      git_url: "https://github.com/Publikey/test-dummy-task.git"
-      branch: "main"
-      startup_cmd: "python python/hello_world/dummy_task.py"
-      startup_timeout_secs: 300
-EOF
+# Create environment file
+cp .env.secret.sample .env.secret
 
-go build && ./runqy-server-minimal -config config.yml
+# Edit .env.secret with your credentials:
+# REDIS_HOST=localhost
+# REDIS_PASSWORD=your-redis-password
+# DATABASE_HOST=localhost
+# DATABASE_PASSWORD=your-db-password
+# ASYNQ_API_KEY=dev-api-key-12345
+
+cd app && go run .
 ```
+
+The server will start on port 3000 by default.
 
 ## 3. Start a Worker
 
@@ -56,7 +51,7 @@ cd runqy-worker
 # Create config file
 cat > config.yml << 'EOF'
 server:
-  url: "http://localhost:8081"
+  url: "http://localhost:3000"
   api_key: "dev-api-key-12345"
 worker:
   queue: "inference"
