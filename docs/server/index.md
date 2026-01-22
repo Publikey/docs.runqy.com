@@ -10,8 +10,29 @@ The server provides:
 - **Queue configuration**: Defines available queues and their deployment specs
 - **Redis credential distribution**: Securely provides Redis connection info to workers
 - **REST API**: Full API for managing queues, workers, and tasks
+- **CLI**: Comprehensive command-line interface for local and remote management
 - **Web dashboard**: Monitoring interface for task queues and workers
 - **Swagger documentation**: Interactive API documentation
+
+## CLI
+
+The runqy server includes a powerful CLI for managing your task queue system. The CLI can operate in two modes:
+
+- **Local mode**: Direct access to Redis and PostgreSQL for fast operations
+- **Remote mode**: Connect to any runqy server via HTTP API with authentication
+
+```bash
+# Local operations
+runqy queue list
+runqy task enqueue -q inference_high -p '{"msg":"hello"}'
+runqy worker list
+
+# Remote operations (with saved credentials)
+runqy login -s https://production.example.com:3000 -k your-api-key
+runqy queue list  # Now operates on remote server
+```
+
+See the [CLI Reference](cli.md) for complete documentation.
 
 ## Installation
 
@@ -36,7 +57,7 @@ cp .env.secret.sample .env.secret
 | `REDIS_PASSWORD` | Yes | - | Redis password |
 | `DATABASE_HOST` | Yes | localhost | PostgreSQL hostname |
 | `DATABASE_PASSWORD` | Yes | - | PostgreSQL password |
-| `ASYNQ_API_KEY` | Yes | - | API key for authenticated endpoints |
+| `RUNQY_API_KEY` | Yes | - | API key for authenticated endpoints |
 
 ## Running
 

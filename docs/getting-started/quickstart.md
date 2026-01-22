@@ -1,96 +1,195 @@
 # Quick Start
 
-This guide walks you through setting up a local runqy environment.
+This guide walks you through setting up a local runqy environment with working examples.
 
 ## Prerequisites
 
-- Go 1.21+
-- Python 3.9+
-- Redis server
+- Go 1.24+
+- Docker (for Redis)
 - Git
 
-## 1. Start Redis
+!!! note "No database required"
+    SQLite is embedded in the server for development. PostgreSQL is only needed for production.
 
-```bash
-# Using Docker
-docker run -d -p 6379:6379 redis:latest
-
-# Or install locally
-redis-server
-```
-
-## 2. Start the Server
+## 1. Clone the Repos
 
 ```bash
 git clone https://github.com/Publikey/runqy.git
-cd runqy
-
-# Create environment file
-cp .env.secret.sample .env.secret
-
-# Edit .env.secret with your credentials:
-# REDIS_HOST=localhost
-# REDIS_PASSWORD=your-redis-password
-# DATABASE_HOST=localhost
-# DATABASE_PASSWORD=your-db-password
-# ASYNQ_API_KEY=dev-api-key-12345
-
-cd app && go run .
+git clone https://github.com/Publikey/runqy-worker.git
 ```
 
-The server will start on port 3000 by default.
+## 2. Start Redis
 
-## 3. Start a Worker
+```bash
+docker run -d --name redis -p 6379:6379 redis:alpine
+```
+
+## 3. Start the Server
+
+```bash
+cd runqy/app
+export REDIS_HOST=localhost
+export REDIS_PASSWORD=""
+export RUNQY_API_KEY=dev-api-key
+go run . serve --sqlite
+```
+
+The server starts on port 3000 by default.
+
+## 4. Deploy the Example Queues
 
 In a new terminal:
 
 ```bash
-git clone https://github.com/Publikey/runqy-worker.git
-cd runqy-worker
+cd runqy/app
+go build -o runqy .
+./runqy config create ../examples/quickstart.yaml
+```
 
-# Create config file
-cat > config.yml << 'EOF'
+This deploys two example queues:
+
+| Queue | Mode | Description |
+|-------|------|-------------|
+| `quickstart-oneshot` | one_shot | Spawns a new Python process per task |
+| `quickstart-longrunning` | long_running | Keeps Python process alive between tasks |
+
+## 5. Start a Worker
+
+In a new terminal:
+
+```bash
+cd runqy-worker
+cp config.yml.example config.yml
+go run ./cmd/worker
+```
+
+The example config is pre-configured for the quickstart:
+
+```yaml
 server:
   url: "http://localhost:3000"
-  api_key: "dev-api-key-12345"
-worker:
-  queue: "inference"
-  concurrency: 1
-  shutdown_timeout: 30s
-deployment:
-  dir: "./deployment"
-EOF
+  api_key: "dev-api-key"  # Must match server's RUNQY_API_KEY
 
-go build ./cmd/worker && ./worker
+worker:
+  queue: "quickstart-oneshot"  # Matches queue in quickstart.yaml
 ```
 
 The worker will:
 
 1. Register with the server
-2. Clone the task code
-3. Set up a Python environment
+2. Clone the example task code from the runqy repo
+3. Set up a Python virtual environment
 4. Start the Python process
 5. Begin processing tasks
 
-## 4. Enqueue a Task
+## 6. Enqueue a Task
 
 ```bash
-redis-cli
-
-# Create task data
-HSET asynq:t:test-1 type task payload '{"msg":"hello"}' retry 0 max_retry 2 queue inference:default
-
-# Push to pending queue
-LPUSH asynq:inference:default:pending test-1
+curl -X POST http://localhost:3000/queue/add \
+  -H "Authorization: Bearer dev-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "queue": "quickstart-oneshot:default",
+    "timeout": 60,
+    "data": {"operation": "uppercase", "data": "hello world"}
+  }'
 ```
 
-## 5. Check the Result
+Response:
+
+```json
+{
+  "info": {
+    "id": "abc123...",
+    "state": "pending",
+    "queue": "quickstart-oneshot:default",
+    ...
+  },
+  "data": {...}
+}
+```
+
+!!! tip "Task ID"
+    Use the `id` from the response to check the result in the next step.
+
+### Try Long-Running Mode
+
+To try long-running mode, start another worker with `queue: "quickstart-longrunning"` in its config, then enqueue to `quickstart-longrunning:default`.
+
+## 7. Check the Result
+
+Replace `{id}` with the task ID from the previous step:
 
 ```bash
-redis-cli GET asynq:result:test-1
+curl http://localhost:3000/queue/{id}/quickstart-oneshot:default
 ```
+
+Response:
+
+```json
+{
+  "info": {
+    "state": "completed",
+    "result": {"result": "HELLO WORLD"}
+  }
+}
+```
+
+## 8. Monitor
+
+Visit [http://localhost:3000/monitoring/](http://localhost:3000/monitoring/) to see the web dashboard.
+
+## Example Task Code
+
+The quickstart uses example tasks from `runqy/examples/`:
+
+=== "One-Shot Mode"
+
+    ```python title="examples/quickstart-oneshot/main.py"
+    from runqy_task import task, run_once
+
+    @task
+    def process(payload: dict) -> dict:
+        operation = payload.get("operation", "echo")
+        data = payload.get("data")
+
+        if operation == "echo":
+            return {"result": data}
+        elif operation == "uppercase":
+            return {"result": data.upper() if isinstance(data, str) else data}
+        elif operation == "double":
+            return {"result": data * 2 if isinstance(data, (int, float)) else data}
+        else:
+            return {"error": f"Unknown operation: {operation}"}
+
+    if __name__ == "__main__":
+        run_once()
+    ```
+
+=== "Long-Running Mode"
+
+    ```python title="examples/quickstart-longrunning/main.py"
+    from runqy_task import task, load, run
+
+    @load
+    def setup():
+        # Initialize resources once at startup
+        return {"processor": SimpleProcessor()}
+
+    @task
+    def process(payload: dict, ctx: dict) -> dict:
+        processor = ctx["processor"]
+        operation = payload.get("operation", "echo")
+        data = payload.get("data")
+        result = processor.process(operation, data)
+        return {"result": result, "calls": processor.call_count}
+
+    if __name__ == "__main__":
+        run()
+    ```
 
 ## Next Steps
 
 - [Architecture Overview](architecture.md) — Understand how the components work together
 - [Python SDK](../python-sdk/index.md) — Write your own task handlers
+- [Configuration](../server/configuration.md) — Configure the server for production

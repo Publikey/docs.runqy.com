@@ -72,7 +72,7 @@ REDIS_HOST=localhost
 REDIS_PASSWORD=
 DATABASE_HOST=localhost
 DATABASE_PASSWORD=devpassword
-ASYNQ_API_KEY=dev-api-key-12345
+RUNQY_API_KEY=dev-api-key-12345
 EOF
 
 cd app && go run .
