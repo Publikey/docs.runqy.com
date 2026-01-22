@@ -26,13 +26,27 @@ docker run -d --name redis -p 6379:6379 redis:alpine
 
 ## 3. Start the Server
 
-```bash
-cd runqy/app
-export REDIS_HOST=localhost
-export REDIS_PASSWORD=""
-export RUNQY_API_KEY=dev-api-key
-go run . serve --sqlite
-```
+=== "Linux/Mac"
+
+    ```bash
+    cd runqy/app
+    export REDIS_HOST=localhost
+    export REDIS_PORT=6379
+    export REDIS_PASSWORD=""
+    export RUNQY_API_KEY=dev-api-key
+    go run . serve --sqlite
+    ```
+
+=== "Windows (PowerShell)"
+
+    ```powershell
+    cd runqy/app
+    $env:REDIS_HOST = "localhost"
+    $env:REDIS_PORT = "6379"
+    $env:REDIS_PASSWORD = ""
+    $env:RUNQY_API_KEY = "dev-api-key"
+    go run . serve --sqlite
+    ```
 
 The server starts on port 3000 by default.
 
@@ -40,11 +54,23 @@ The server starts on port 3000 by default.
 
 In a new terminal:
 
-```bash
-cd runqy/app
-go build -o runqy .
-./runqy config create ../examples/quickstart.yaml
-```
+=== "Linux/Mac"
+
+    ```bash
+    cd runqy/app
+    go build -o runqy .
+    ./runqy login -s http://localhost:3000 -k dev-api-key
+    ./runqy config create -f ../examples/quickstart.yaml
+    ```
+
+=== "Windows (PowerShell)"
+
+    ```powershell
+    cd runqy/app
+    go build -o runqy.exe .
+    .\runqy.exe login -s http://localhost:3000 -k dev-api-key
+    .\runqy.exe config create -f ..\examples\quickstart.yaml
+    ```
 
 This deploys two example queues:
 
