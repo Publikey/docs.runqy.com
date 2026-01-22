@@ -63,15 +63,17 @@ cp config.yml.example config.yml
 go run ./cmd/worker
 ```
 
-The example config is pre-configured for the quickstart:
+The example config is pre-configured for the quickstart with both queues:
 
 ```yaml
 server:
   url: "http://localhost:3000"
-  api_key: "dev-api-key"  # Must match server's RUNQY_API_KEY
+  api_key: "dev-api-key"
 
 worker:
-  queue: "quickstart-oneshot"  # Matches queue in quickstart.yaml
+  queues:
+    - "quickstart-oneshot:default"
+    - "quickstart-longrunning:default"
 ```
 
 The worker will:
@@ -114,7 +116,7 @@ Response:
 
 ### Try Long-Running Mode
 
-To try long-running mode, start another worker with `queue: "quickstart-longrunning"` in its config, then enqueue to `quickstart-longrunning:default`.
+To try long-running mode, just enqueue to `quickstart-longrunning:default` — the worker already listens on both queues.
 
 ## 7. Check the Result
 
