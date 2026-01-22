@@ -98,8 +98,8 @@ server:
 
 worker:
   queues:
-    - "quickstart-oneshot:default"
-    - "quickstart-longrunning:default"
+    - "quickstart-oneshot_default"
+    - "quickstart-longrunning_default"
 ```
 
 The worker will:
@@ -117,7 +117,7 @@ curl -X POST http://localhost:3000/queue/add \
   -H "Authorization: Bearer dev-api-key" \
   -H "Content-Type: application/json" \
   -d '{
-    "queue": "quickstart-oneshot:default",
+    "queue": "quickstart-oneshot_default",
     "timeout": 60,
     "data": {"operation": "uppercase", "data": "hello world"}
   }'
@@ -130,7 +130,7 @@ Response:
   "info": {
     "id": "abc123...",
     "state": "pending",
-    "queue": "quickstart-oneshot:default",
+    "queue": "quickstart-oneshot_default",
     ...
   },
   "data": {...}
@@ -142,14 +142,14 @@ Response:
 
 ### Try Long-Running Mode
 
-To try long-running mode, just enqueue to `quickstart-longrunning:default` — the worker already listens on both queues.
+To try long-running mode, just enqueue to `quickstart-longrunning_default` — the worker already listens on both queues.
 
 ## 7. Check the Result
 
 Replace `{id}` with the task ID from the previous step:
 
 ```bash
-curl http://localhost:3000/queue/{id}/quickstart-oneshot:default
+curl http://localhost:3000/queue/{id}/quickstart-oneshot_default
 ```
 
 Response:
