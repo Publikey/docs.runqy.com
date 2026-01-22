@@ -112,16 +112,27 @@ The worker will:
 
 ## 6. Enqueue a Task
 
-```bash
-curl -X POST http://localhost:3000/queue/add \
-  -H "Authorization: Bearer dev-api-key" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "queue": "quickstart-oneshot_default",
-    "timeout": 60,
-    "data": {"operation": "uppercase", "data": "hello world"}
-  }'
-```
+=== "Linux/Mac"
+
+    ```bash
+    curl -X POST http://localhost:3000/queue/add \
+      -H "Authorization: Bearer dev-api-key" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "queue": "quickstart-oneshot_default",
+        "timeout": 60,
+        "data": {"operation": "uppercase", "data": "hello world"}
+      }'
+    ```
+
+=== "Windows (PowerShell)"
+
+    ```powershell
+    curl.exe -X POST http://localhost:3000/queue/add `
+      -H "Authorization: Bearer dev-api-key" `
+      -H "Content-Type: application/json" `
+      -d '{\"queue\": \"quickstart-oneshot_default\", \"timeout\": 60, \"data\": {\"operation\": \"uppercase\", \"data\": \"hello world\"}}'
+    ```
 
 Response:
 
@@ -148,9 +159,17 @@ To try long-running mode, just enqueue to `quickstart-longrunning_default` — t
 
 Replace `{id}` with the task ID from the previous step:
 
-```bash
-curl http://localhost:3000/queue/{id}/quickstart-oneshot_default
-```
+=== "Linux/Mac"
+
+    ```bash
+    curl http://localhost:3000/queue/{id}/quickstart-oneshot_default
+    ```
+
+=== "Windows (PowerShell)"
+
+    ```powershell
+    curl.exe http://localhost:3000/queue/{id}/quickstart-oneshot_default
+    ```
 
 Response:
 
