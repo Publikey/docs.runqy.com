@@ -1,19 +1,9 @@
 # runqy Documentation
 
-<div class="hero" markdown>
-  <div class="hero-content">
-    <p class="hero-eyebrow">Distributed Task Queue</p>
-    <h1>Run Any Task, Anywhere</h1>
-    <p class="hero-description">
-      Server-driven workers. Zero configuration.<br>
-      Deploy Python tasks at scale.
-    </p>
-    <div class="hero-buttons">
-      <a href="getting-started/quickstart/" class="btn-primary">Get Started</a>
-      <a href="https://github.com/Publikey/runqy" class="btn-secondary">GitHub</a>
-    </div>
-  </div>
-</div>
+**Distributed Task Queue** — Server-driven workers. Zero configuration. Deploy Python tasks at scale.
+
+[Get Started](getting-started/quickstart.md){ .md-button .md-button--primary }
+[GitHub](https://github.com/Publikey/runqy){ .md-button }
 
 ## What is runqy?
 
@@ -26,46 +16,19 @@ runqy is a task queue system where workers are stateless. They receive all confi
 
 ## Components
 
-<div class="component-cards" markdown>
-  <div class="component-card" markdown>
-### [runqy Server](server/index.md)
-Go HTTP server for worker registration, queue management, and REST API
-  </div>
-  <div class="component-card" markdown>
-### [runqy Worker](worker/index.md)
-Go binary that processes tasks from Redis and supervises Python processes
-  </div>
-  <div class="component-card" markdown>
-### [runqy-task](python-sdk/index.md)
-Python SDK with `@task` and `@load` decorators for building task handlers
-  </div>
-</div>
+- **[runqy Server](server/index.md)** — Go HTTP server for worker registration, queue management, and REST API
+- **[runqy Worker](worker/index.md)** — Go binary that processes tasks from Redis and supervises Python processes
+- **[runqy-task](python-sdk/index.md)** — Python SDK with `@task` and `@load` decorators for building task handlers
 
 ## Quick Links
 
-<div class="quick-links" markdown>
-  <a href="getting-started/quickstart/" class="quick-link">
-    <span class="quick-link-icon">:material-rocket-launch:</span>
-    <span class="quick-link-text">Quick Start Guide</span>
-  </a>
-  <a href="getting-started/architecture/" class="quick-link">
-    <span class="quick-link-icon">:material-sitemap:</span>
-    <span class="quick-link-text">Architecture Overview</span>
-  </a>
-  <a href="server/cli/" class="quick-link">
-    <span class="quick-link-icon">:material-console:</span>
-    <span class="quick-link-text">CLI Reference</span>
-  </a>
-  <a href="python-sdk/decorators/" class="quick-link">
-    <span class="quick-link-icon">:material-language-python:</span>
-    <span class="quick-link-text">Python SDK Reference</span>
-  </a>
-</div>
+- :material-rocket-launch: [Quick Start Guide](getting-started/quickstart.md)
+- :material-sitemap: [Architecture Overview](getting-started/architecture.md)
+- :material-console: [CLI Reference](server/cli.md)
+- :material-language-python: [Python SDK Reference](python-sdk/decorators.md)
 
 ## Source Code
 
-<div class="source-links" markdown>
-  <a href="https://github.com/Publikey/runqy" class="source-link">:material-github: runqy-server</a>
-  <a href="https://github.com/Publikey/runqy-worker" class="source-link">:material-github: runqy-worker</a>
-  <a href="https://github.com/Publikey/runqy-python" class="source-link">:material-github: runqy-python</a>
-</div>
+- [:material-github: runqy-server](https://github.com/Publikey/runqy)
+- [:material-github: runqy-worker](https://github.com/Publikey/runqy-worker)
+- [:material-github: runqy-python](https://github.com/Publikey/runqy-python)

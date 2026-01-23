@@ -88,9 +88,6 @@ nav:
       - Enqueueing Tasks: guides/enqueueing-tasks.md
       - Monitoring: guides/monitoring.md
 
-extra_css:
-  - stylesheets/hero.css
-
 extra:
   social:
     - icon: fontawesome/brands/github
