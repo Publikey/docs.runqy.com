@@ -141,15 +141,21 @@ In a new terminal:
     === "Linux/Mac"
 
         ```bash
+        # Download example config
+        curl -fsSL https://raw.githubusercontent.com/Publikey/runqy/main/examples/quickstart.yaml -o quickstart.yaml
+
         runqy login -s http://localhost:3000 -k dev-api-key
-        runqy config create -f runqy/examples/quickstart.yaml
+        runqy config create -f quickstart.yaml
         ```
 
     === "Windows (PowerShell)"
 
         ```powershell
+        # Download example config
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Publikey/runqy/main/examples/quickstart.yaml" -OutFile "quickstart.yaml"
+
         runqy login -s http://localhost:3000 -k dev-api-key
-        runqy config create -f runqy\examples\quickstart.yaml
+        runqy config create -f quickstart.yaml
         ```
 
 === "From Source"
@@ -185,23 +191,45 @@ In a new terminal:
 
 === "Pre-built Binary"
 
-    ```bash
-    # Download example config
-    curl -fsSL https://raw.githubusercontent.com/publikey/runqy-worker/main/config.yml.example -o config.yml
+    === "Linux/Mac"
 
-    # Start worker
-    runqy-worker -config config.yml
-    ```
+        ```bash
+        # Download example config
+        curl -fsSL https://raw.githubusercontent.com/publikey/runqy-worker/main/config.yml.example -o config.yml
+
+        # Start worker
+        runqy-worker -config config.yml
+        ```
+
+    === "Windows (PowerShell)"
+
+        ```powershell
+        # Download example config
+        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/publikey/runqy-worker/main/config.yml.example" -OutFile "config.yml"
+
+        # Start worker
+        runqy-worker -config config.yml
+        ```
 
 === "From Source"
 
-    ```bash
-    cd runqy-worker
-    cp config.yml.example config.yml
-    go run ./cmd/worker
-    ```
+    === "Linux/Mac"
 
-The example config is pre-configured for the quickstart with both queues:
+        ```bash
+        cd runqy-worker
+        cp config.yml.example config.yml
+        go run ./cmd/worker
+        ```
+
+    === "Windows (PowerShell)"
+
+        ```powershell
+        cd runqy-worker
+        Copy-Item config.yml.example config.yml
+        go run ./cmd/worker
+        ```
+
+The downloaded config is pre-configured for the quickstart (no changes needed):
 
 ```yaml
 server:
@@ -220,9 +248,11 @@ The worker will:
 2. Clone the example task code from the runqy repo
 3. Set up a Python virtual environment
 4. Start the Python process
-5. Begin processing tasks
+5. The worker is now ready to process tasks
 
 ## 5. Enqueue a Task
+
+In a new terminal:
 
 === "Linux/Mac"
 
