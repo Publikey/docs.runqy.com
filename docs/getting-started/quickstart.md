@@ -4,73 +4,173 @@ This guide walks you through setting up a local runqy environment with working e
 
 ## Prerequisites
 
-- Go 1.24+
-- Docker (for Redis)
-- Git
+- Docker (for Redis, or use Docker Compose for full stack)
+- **One of:**
+    - Pre-built binaries (recommended)
+    - Go 1.24+ (to build from source)
 
-!!! note "No database required"
+!!! note "No database required for development"
     SQLite is embedded in the server for development. PostgreSQL is only needed for production.
 
-## 1. Clone the Repos
+## Choose Your Installation Method
 
-```bash
-git clone https://github.com/Publikey/runqy.git
-git clone https://github.com/Publikey/runqy-worker.git
-```
+=== "Quick Install (Recommended)"
 
-## 2. Start Redis
+    The fastest way to get started:
+
+    **Linux/macOS:**
+    ```bash
+    # Install server
+    curl -fsSL https://raw.githubusercontent.com/publikey/runqy/main/install.sh | sh
+
+    # Install worker
+    curl -fsSL https://raw.githubusercontent.com/publikey/runqy-worker/main/install.sh | sh
+    ```
+
+    **Windows (PowerShell):**
+    ```powershell
+    # Install server
+    iwr https://raw.githubusercontent.com/publikey/runqy/main/install.ps1 -useb | iex
+
+    # Install worker
+    iwr https://raw.githubusercontent.com/publikey/runqy-worker/main/install.ps1 -useb | iex
+    ```
+
+=== "Docker Compose Quickstart (Recommended)"
+
+    Run the full stack without cloning the repo:
+
+    ```bash
+    curl -O https://raw.githubusercontent.com/Publikey/runqy/main/docker-compose.quickstart.yml
+    docker-compose -f docker-compose.quickstart.yml up -d
+    ```
+
+    This starts Redis, PostgreSQL, server, and worker. Skip to [Step 5](#5-enqueue-a-task).
+
+=== "Docker Compose (Full Repo)"
+
+    Clone the repo and run the full stack:
+
+    ```bash
+    git clone https://github.com/Publikey/runqy.git
+    cd runqy
+    docker-compose up -d
+    ```
+
+    This starts Redis, PostgreSQL, server, and worker. Skip to [Step 5](#5-enqueue-a-task).
+
+=== "From Source"
+
+    Build from source:
+
+    ```bash
+    git clone https://github.com/Publikey/runqy.git
+    git clone https://github.com/Publikey/runqy-worker.git
+
+    # Build server
+    cd runqy/app && go build -o runqy .
+
+    # Build worker
+    cd ../../runqy-worker && go build -o runqy-worker ./cmd/worker
+    ```
+
+For more installation options, see the [Installation Guide](installation.md).
+
+## 1. Start Redis
 
 ```bash
 docker run -d --name redis -p 6379:6379 redis:alpine
 ```
 
-## 3. Start the Server
+## 2. Start the Server
 
-=== "Linux/Mac"
+=== "Pre-built Binary"
 
-    ```bash
-    cd runqy/app
-    export REDIS_HOST=localhost
-    export REDIS_PORT=6379
-    export REDIS_PASSWORD=""
-    export RUNQY_API_KEY=dev-api-key
-    go run . serve --sqlite
-    ```
+    === "Linux/Mac"
 
-=== "Windows (PowerShell)"
+        ```bash
+        export REDIS_HOST=localhost
+        export REDIS_PORT=6379
+        export REDIS_PASSWORD=""
+        export RUNQY_API_KEY=dev-api-key
+        runqy serve --sqlite
+        ```
 
-    ```powershell
-    cd runqy/app
-    $env:REDIS_HOST = "localhost"
-    $env:REDIS_PORT = "6379"
-    $env:REDIS_PASSWORD = ""
-    $env:RUNQY_API_KEY = "dev-api-key"
-    go run . serve --sqlite
-    ```
+    === "Windows (PowerShell)"
+
+        ```powershell
+        $env:REDIS_HOST = "localhost"
+        $env:REDIS_PORT = "6379"
+        $env:REDIS_PASSWORD = ""
+        $env:RUNQY_API_KEY = "dev-api-key"
+        runqy serve --sqlite
+        ```
+
+=== "From Source"
+
+    === "Linux/Mac"
+
+        ```bash
+        cd runqy/app
+        export REDIS_HOST=localhost
+        export REDIS_PORT=6379
+        export REDIS_PASSWORD=""
+        export RUNQY_API_KEY=dev-api-key
+        go run . serve --sqlite
+        ```
+
+    === "Windows (PowerShell)"
+
+        ```powershell
+        cd runqy/app
+        $env:REDIS_HOST = "localhost"
+        $env:REDIS_PORT = "6379"
+        $env:REDIS_PASSWORD = ""
+        $env:RUNQY_API_KEY = "dev-api-key"
+        go run . serve --sqlite
+        ```
 
 The server starts on port 3000 by default.
 
-## 4. Deploy the Example Queues
+## 3. Deploy the Example Queues
 
 In a new terminal:
 
-=== "Linux/Mac"
+=== "Pre-built Binary"
 
-    ```bash
-    cd runqy/app
-    go build -o runqy .
-    ./runqy login -s http://localhost:3000 -k dev-api-key
-    ./runqy config create -f ../examples/quickstart.yaml
-    ```
+    === "Linux/Mac"
 
-=== "Windows (PowerShell)"
+        ```bash
+        runqy login -s http://localhost:3000 -k dev-api-key
+        runqy config create -f runqy/examples/quickstart.yaml
+        ```
 
-    ```powershell
-    cd runqy/app
-    go build -o runqy.exe .
-    .\runqy.exe login -s http://localhost:3000 -k dev-api-key
-    .\runqy.exe config create -f ..\examples\quickstart.yaml
-    ```
+    === "Windows (PowerShell)"
+
+        ```powershell
+        runqy login -s http://localhost:3000 -k dev-api-key
+        runqy config create -f runqy\examples\quickstart.yaml
+        ```
+
+=== "From Source"
+
+    === "Linux/Mac"
+
+        ```bash
+        cd runqy/app
+        go build -o runqy .
+        ./runqy login -s http://localhost:3000 -k dev-api-key
+        ./runqy config create -f ../examples/quickstart.yaml
+        ```
+
+    === "Windows (PowerShell)"
+
+        ```powershell
+        cd runqy/app
+        go build -o runqy.exe .
+        .\runqy.exe login -s http://localhost:3000 -k dev-api-key
+        .\runqy.exe config create -f ..\examples\quickstart.yaml
+        ```
 
 This deploys two example queues:
 
@@ -79,15 +179,27 @@ This deploys two example queues:
 | `quickstart-oneshot` | one_shot | Spawns a new Python process per task |
 | `quickstart-longrunning` | long_running | Keeps Python process alive between tasks |
 
-## 5. Start a Worker
+## 4. Start a Worker
 
 In a new terminal:
 
-```bash
-cd runqy-worker
-cp config.yml.example config.yml
-go run ./cmd/worker
-```
+=== "Pre-built Binary"
+
+    ```bash
+    # Download example config
+    curl -fsSL https://raw.githubusercontent.com/publikey/runqy-worker/main/config.yml.example -o config.yml
+
+    # Start worker
+    runqy-worker -config config.yml
+    ```
+
+=== "From Source"
+
+    ```bash
+    cd runqy-worker
+    cp config.yml.example config.yml
+    go run ./cmd/worker
+    ```
 
 The example config is pre-configured for the quickstart with both queues:
 
@@ -110,7 +222,7 @@ The worker will:
 4. Start the Python process
 5. Begin processing tasks
 
-## 6. Enqueue a Task
+## 5. Enqueue a Task
 
 === "Linux/Mac"
 
@@ -155,7 +267,7 @@ Response:
 
 To try long-running mode, just enqueue to `quickstart-longrunning_default` — the worker already listens on both queues.
 
-## 7. Check the Result
+## 6. Check the Result
 
 Replace `{id}` with the task ID from the previous step:
 
@@ -183,7 +295,7 @@ Response:
 }
 ```
 
-## 8. Monitor
+## 7. Monitor
 
 Visit [http://localhost:3000/monitoring/](http://localhost:3000/monitoring/) to see the web dashboard.
 

@@ -72,7 +72,7 @@ REDIS_HOST=localhost
 REDIS_PASSWORD=
 DATABASE_HOST=localhost
 DATABASE_PASSWORD=devpassword
-RUNQY_API_KEY=dev-api-key-12345
+RUNQY_API_KEY=dev-api-key
 EOF
 
 cd app && go run .
@@ -90,7 +90,7 @@ cd runqy-worker
 cat > config.yml << 'EOF'
 server:
   url: "http://localhost:3000"
-  api_key: "dev-api-key-12345"
+  api_key: "dev-api-key"
 worker:
   queue: "inference"
   concurrency: 1

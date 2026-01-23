@@ -66,6 +66,7 @@ nav:
   - Home: index.md
   - Getting Started:
       - Introduction: getting-started/index.md
+      - Installation: getting-started/installation.md
       - Quick Start: getting-started/quickstart.md
       - Architecture: getting-started/architecture.md
   - runqy Server:

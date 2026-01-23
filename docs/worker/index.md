@@ -13,16 +13,98 @@ The worker:
 
 ## Installation
 
+### Binary Download
+
+Download pre-built binaries from the [GitHub releases page](https://github.com/publikey/runqy-worker/releases).
+
+=== "Linux (amd64)"
+
+    ```bash
+    curl -LO https://github.com/publikey/runqy-worker/releases/latest/download/runqy-worker_latest_linux_amd64.tar.gz
+    tar -xzf runqy-worker_latest_linux_amd64.tar.gz
+    ./runqy-worker -config config.yml
+    ```
+
+=== "macOS (Apple Silicon)"
+
+    ```bash
+    curl -LO https://github.com/publikey/runqy-worker/releases/latest/download/runqy-worker_latest_darwin_arm64.tar.gz
+    tar -xzf runqy-worker_latest_darwin_arm64.tar.gz
+    ./runqy-worker -config config.yml
+    ```
+
+=== "Windows (amd64)"
+
+    ```powershell
+    Invoke-WebRequest -Uri https://github.com/publikey/runqy-worker/releases/latest/download/runqy-worker_latest_windows_amd64.zip -OutFile runqy-worker.zip
+    Expand-Archive runqy-worker.zip -DestinationPath .
+    .\runqy-worker.exe -config config.yml
+    ```
+
+### Docker
+
+Docker images are available at `ghcr.io/publikey/runqy-worker`.
+
+=== "Minimal (default)"
+
+    Lightweight Alpine-based image. You install your own runtime (Python, Node, etc.).
+
+    - **Image:** `ghcr.io/publikey/runqy-worker:latest` or `:minimal`
+    - **Base:** Alpine 3.19 with git, curl, ca-certificates
+    - **Platforms:** linux/amd64, linux/arm64
+
+    ```bash
+    docker run -v $(pwd)/config.yml:/app/config.yml ghcr.io/publikey/runqy-worker:latest
+    ```
+
+=== "Inference"
+
+    Pre-configured for ML workloads with PyTorch and CUDA.
+
+    - **Image:** `ghcr.io/publikey/runqy-worker:inference`
+    - **Base:** PyTorch 2.1.0 + CUDA 11.8
+    - **Platform:** linux/amd64 only
+    - **Includes:** Python 3, pip, PyTorch, CUDA runtime
+
+    ```bash
+    docker run --gpus all -v $(pwd)/config.yml:/app/config.yml ghcr.io/publikey/runqy-worker:inference
+    ```
+
+=== "Docker Compose"
+
+    ```yaml
+    version: "3.8"
+    services:
+      worker:
+        image: ghcr.io/publikey/runqy-worker:latest
+        volumes:
+          - ./config.yml:/app/config.yml
+          - ./deployment:/app/deployment
+        restart: unless-stopped
+    ```
+
+#### Available Tags
+
+| Tag | Description |
+|-----|-------------|
+| `latest`, `minimal` | Minimal Alpine image (multi-arch) |
+| `inference` | PyTorch + CUDA image (amd64 only) |
+| `<version>` | Specific version, minimal base |
+| `<version>-minimal` | Specific version, minimal base |
+| `<version>-inference` | Specific version, inference base |
+
+### From Source
+
 ```bash
 git clone https://github.com/Publikey/runqy-worker.git
 cd runqy-worker
-go build ./cmd/worker
+go build -o runqy-worker ./cmd/worker
 ```
 
 ## Running
 
 ```bash
-./worker -config config.yml
+./runqy-worker -config config.yml
 ```
 
 ## Lifecycle
