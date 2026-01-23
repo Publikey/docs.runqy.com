@@ -103,9 +103,9 @@ Enqueue a new task.
 }
 ```
 
-### `GET /queue/{task_id}/{queue_name}`
+### `GET /queue/{task_id}`
 
-Get task status and result.
+Get task status and result. The queue is automatically determined from the task's metadata stored in Redis.
 
 **Response:**
 
@@ -113,11 +113,20 @@ Get task status and result.
 {
   "info": {
     "id": "task-uuid",
+    "queue": "inference_high",
     "state": "completed",
     "result": "..."
   }
 }
 ```
+
+**Error Responses:**
+
+| Status | Description |
+|--------|-------------|
+| 404 | Task not found |
+| 400 | Invalid request |
+| 500 | Internal server error |
 
 ---
 

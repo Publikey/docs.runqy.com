@@ -162,13 +162,13 @@ Replace `{id}` with the task ID from the previous step:
 === "Linux/Mac"
 
     ```bash
-    curl http://localhost:3000/queue/{id}/quickstart-oneshot_default
+    curl http://localhost:3000/queue/{id}
     ```
 
 === "Windows (PowerShell)"
 
     ```powershell
-    curl.exe http://localhost:3000/queue/{id}/quickstart-oneshot_default
+    curl.exe http://localhost:3000/queue/{id}
     ```
 
 Response:
@@ -177,6 +177,7 @@ Response:
 {
   "info": {
     "state": "completed",
+    "queue": "quickstart-oneshot_default",
     "result": {"result": "HELLO WORLD"}
   }
 }
