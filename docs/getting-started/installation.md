@@ -268,9 +268,14 @@ After installation, configure these environment variables before starting the se
 | `REDIS_HOST` | Yes | Redis hostname |
 | `REDIS_PORT` | No | Redis port (default: 6379) |
 | `REDIS_PASSWORD` | Yes | Redis password (can be empty) |
+| `REDIS_TLS` | No | Enable TLS for Redis (default: false) |
 | `RUNQY_API_KEY` | Yes | API key for authentication |
-| `DATABASE_HOST` | No | PostgreSQL host (use `--sqlite` for dev) |
+| `DATABASE_HOST` | No | PostgreSQL host (default: localhost, use `--sqlite` for dev) |
+| `DATABASE_PORT` | No | PostgreSQL port (default: 5432) |
+| `DATABASE_USER` | No | PostgreSQL username (default: postgres) |
 | `DATABASE_PASSWORD` | No | PostgreSQL password |
+| `DATABASE_DBNAME` | No | PostgreSQL database name (default: sdxl_queuing_dev) |
+| `DATABASE_SSL` | No | PostgreSQL SSL mode (default: disable) |
 
 See [Configuration](../server/configuration.md) for the full reference.
 

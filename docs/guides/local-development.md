@@ -71,7 +71,10 @@ cat > .env.secret << 'EOF'
 REDIS_HOST=localhost
 REDIS_PASSWORD=
 DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=postgres
 DATABASE_PASSWORD=devpassword
+DATABASE_DBNAME=runqy_dev
 RUNQY_API_KEY=dev-api-key
 EOF
 

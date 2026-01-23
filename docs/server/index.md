@@ -55,8 +55,13 @@ cp .env.secret.sample .env.secret
 | `REDIS_HOST` | Yes | localhost | Redis hostname |
 | `REDIS_PORT` | No | 6379 | Redis port |
 | `REDIS_PASSWORD` | Yes | - | Redis password |
-| `DATABASE_HOST` | Yes | localhost | PostgreSQL hostname |
+| `REDIS_TLS` | No | false | Enable TLS for Redis connection |
+| `DATABASE_HOST` | No | localhost | PostgreSQL hostname |
+| `DATABASE_PORT` | No | 5432 | PostgreSQL port |
+| `DATABASE_USER` | No | postgres | PostgreSQL username |
 | `DATABASE_PASSWORD` | Yes | - | PostgreSQL password |
+| `DATABASE_DBNAME` | No | sdxl_queuing_dev | PostgreSQL database name |
+| `DATABASE_SSL` | No | disable | PostgreSQL SSL mode |
 | `RUNQY_API_KEY` | Yes | - | API key for authenticated endpoints |
 
 ## Running
