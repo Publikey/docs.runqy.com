@@ -165,8 +165,7 @@ In a new terminal:
         ```bash
         cd runqy/app
         go build -o runqy .
-        ./runqy login -s http://localhost:3000 -k dev-api-key
-        ./runqy config create -f ../examples/quickstart.yaml
+        ./runqy login -s http://localhost:3000 -k dev-api-key config create -f ../examples/quickstart.yaml
         ```
 
     === "Windows (PowerShell)"
