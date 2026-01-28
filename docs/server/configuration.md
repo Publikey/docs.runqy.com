@@ -72,6 +72,7 @@ Each queue is defined by its name (key) and the following options:
 | `startup_timeout_secs` | int | Yes | Timeout for process startup |
 | `requirements_file` | string | No | Path to requirements.txt (default: `requirements.txt`) |
 | `vaults` | list | No | List of vault names to inject as environment variables |
+| `redis_storage` | bool | No | If `true`, task results are written to Redis. If `false`, results are not stored in Redis and must be managed by the task itself (e.g., via webhook). Default: `false` |
 
 ## Sub-Queues
 
