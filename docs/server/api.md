@@ -56,10 +56,17 @@ Registers a worker and returns configuration including Redis credentials and dep
     "branch": "main",
     "startup_cmd": "python main.py",
     "startup_timeout_secs": 300,
-    "requirements_file": "requirements.txt"
+    "requirements_file": "requirements.txt",
+    "vaults": ["api-keys"]
+  },
+  "vaults": {
+    "OPENAI_API_KEY": "sk-actual-decrypted-key",
+    "HF_TOKEN": "hf-actual-decrypted-token"
   }
 }
 ```
+
+The `vaults` field in the response contains decrypted key-value pairs from all vaults referenced in the deployment configuration. These are injected as environment variables by the worker.
 
 **Error Responses:**
 
@@ -168,6 +175,156 @@ These endpoints are used by the CLI for remote management. All require Bearer to
 | `POST` | `/api/cli/configs/reload` | Reload configurations from YAML |
 | `POST` | `/api/cli/configs` | Create a new queue configuration |
 | `DELETE` | `/api/cli/configs/{name}` | Delete a queue configuration |
+
+---
+
+## Vault Endpoints
+
+Vault endpoints manage encrypted secrets. All require Bearer token authentication.
+
+!!! note "Prerequisite"
+    The vaults feature must be enabled by setting the `RUNQY_VAULT_MASTER_KEY` environment variable. If not set, vault endpoints return `503 Service Unavailable`.
+
+### `GET /api/vaults`
+
+List all vaults with entry counts.
+
+**Response:**
+
+```json
+{
+  "vaults": [
+    {
+      "name": "api-keys",
+      "description": "API keys for external services",
+      "entry_count": 3
+    }
+  ],
+  "count": 1
+}
+```
+
+### `POST /api/vaults`
+
+Create a new vault.
+
+**Request Body:**
+
+```json
+{
+  "name": "api-keys",
+  "description": "API keys for external services"
+}
+```
+
+**Response:**
+
+```json
+{
+  "message": "vault created successfully",
+  "vault": {
+    "name": "api-keys",
+    "description": "API keys for external services"
+  }
+}
+```
+
+### `GET /api/vaults/{name}`
+
+Get vault details with entries (secret values masked).
+
+**Response:**
+
+```json
+{
+  "name": "api-keys",
+  "description": "API keys for external services",
+  "entries": [
+    {
+      "key": "OPENAI_API_KEY",
+      "value": "sk****yz",
+      "is_secret": true,
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T12:45:00Z"
+    }
+  ],
+  "created_at": "2024-01-15T10:30:00Z",
+  "updated_at": "2024-01-15T12:45:00Z"
+}
+```
+
+### `DELETE /api/vaults/{name}`
+
+Delete a vault and all its entries.
+
+**Response:**
+
+```json
+{
+  "message": "vault deleted successfully"
+}
+```
+
+### `POST /api/vaults/{name}/entries`
+
+Set or update a vault entry.
+
+**Request Body:**
+
+```json
+{
+  "key": "OPENAI_API_KEY",
+  "value": "sk-your-key-here",
+  "is_secret": true
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `key` | string | Yes | Entry key (environment variable name) |
+| `value` | string | Yes | Entry value |
+| `is_secret` | boolean | No | Mask value in API responses (default: `true`) |
+
+**Response:**
+
+```json
+{
+  "message": "entry set successfully"
+}
+```
+
+### `GET /api/vaults/{name}/entries`
+
+List all entries in a vault (secret values masked).
+
+**Response:**
+
+```json
+{
+  "entries": [
+    {
+      "key": "OPENAI_API_KEY",
+      "value": "sk****yz",
+      "is_secret": true,
+      "created_at": "2024-01-15T10:30:00Z",
+      "updated_at": "2024-01-15T12:45:00Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+### `DELETE /api/vaults/{name}/entries/{key}`
+
+Delete a vault entry.
+
+**Response:**
+
+```json
+{
+  "message": "entry deleted successfully"
+}
+```
 
 ---
 

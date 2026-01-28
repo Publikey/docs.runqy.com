@@ -86,6 +86,7 @@ nav:
   - Guides:
       - Local Development: guides/local-development.md
       - Enqueueing Tasks: guides/enqueueing-tasks.md
+      - Vaults (Secrets): guides/vaults.md
       - Monitoring: guides/monitoring.md
 
 extra:
