@@ -51,6 +51,24 @@ Configuration values can also be set via environment variables:
 | `RUNQY_API_KEY` | `server.api_key` |
 | `RUNQY_QUEUE` | `worker.queue` |
 
+## Vault Injection
+
+If the queue's deployment configuration references vaults, the worker automatically:
+
+1. Receives decrypted vault entries from the server during bootstrap
+2. Injects them as environment variables before starting the Python process
+3. Python code can access secrets via `os.environ`
+
+```python
+import os
+
+# Access secrets from vaults
+api_key = os.environ.get("OPENAI_API_KEY")
+db_password = os.environ.get("DB_PASSWORD")
+```
+
+Vaults are configured on the server side in the queue's deployment YAML. See the [Vaults Guide](../guides/vaults.md) for details.
+
 ## Key Constraint
 
 **One worker = one queue = one supervised Python process**

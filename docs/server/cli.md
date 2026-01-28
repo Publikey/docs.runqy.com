@@ -21,6 +21,7 @@ go build -o runqy .
 | `runqy task` | Task management commands |
 | `runqy worker` | Worker management commands |
 | `runqy config` | Configuration management commands |
+| `runqy vault` | Vault management commands (secrets) |
 | `runqy login` | Save server credentials for remote mode |
 | `runqy logout` | Remove saved credentials |
 | `runqy auth` | Authentication management (status, list, switch) |
@@ -265,6 +266,118 @@ runqy config remove myqueue
 runqy config remove --name myqueue
 ```
 
+## Vault Commands
+
+Vaults store encrypted secrets that are injected into workers as environment variables.
+
+!!! note "Prerequisite"
+    The vaults feature requires the `RUNQY_VAULT_MASTER_KEY` environment variable to be set on the server.
+
+### List Vaults
+
+```bash
+runqy vault list
+```
+
+Output:
+```
+NAME         DESCRIPTION                    ENTRIES
+api-keys     API keys for external services 3
+credentials  Database credentials           2
+```
+
+### Create a Vault
+
+```bash
+# Create with description
+runqy vault create api-keys -d "API keys for external services"
+
+# Create without description
+runqy vault create my-secrets
+```
+
+### Show Vault Details
+
+```bash
+runqy vault show api-keys
+```
+
+Output:
+```
+Vault: api-keys
+Description: API keys for external services
+Created: 2024-01-15T10:30:00Z
+Updated: 2024-01-15T12:45:00Z
+
+Entries (3):
+KEY              VALUE           SECRET
+OPENAI_API_KEY   sk****yz        yes
+HF_TOKEN         hf****ab        yes
+DEBUG_MODE       true            no
+```
+
+Secret values are masked in the output for security.
+
+### Delete a Vault
+
+```bash
+# With confirmation prompt
+runqy vault delete api-keys
+
+# Skip confirmation
+runqy vault delete api-keys --force
+```
+
+### Set a Vault Entry
+
+```bash
+# Set a secret entry (default)
+runqy vault set api-keys OPENAI_API_KEY sk-your-key-here
+
+# Set a non-secret entry (visible in API responses)
+runqy vault set api-keys DEBUG_MODE true --no-secret
+```
+
+**Set Flags:**
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--no-secret` | Store as non-secret (visible in API) | `false` |
+
+### Get a Vault Entry
+
+```bash
+runqy vault get api-keys OPENAI_API_KEY
+```
+
+Output:
+```
+sk-your-actual-key-here
+```
+
+!!! warning "Local Only"
+    The `vault get` command only works in local mode for security reasons. It returns the decrypted value.
+
+### Remove a Vault Entry
+
+```bash
+runqy vault unset api-keys OPENAI_API_KEY
+```
+
+### List Vault Entries
+
+```bash
+runqy vault entries api-keys
+```
+
+Output:
+```
+KEY              VALUE           SECRET  UPDATED
+OPENAI_API_KEY   sk****yz        yes     2024-01-15T12:45:00Z
+HF_TOKEN         hf****ab        yes     2024-01-15T10:30:00Z
+DEBUG_MODE       true            no      2024-01-15T11:00:00Z
+```
+
 ## Remote Mode
 
 The CLI can operate in two modes:
@@ -313,6 +426,9 @@ runqy -s https://server:3000 -k API_KEY config reload
 | `worker list/info` | Yes | Full support |
 | `config list/reload/create/remove` | Yes | Full support |
 | `config validate` | No | Local-only (validates local YAML files) |
+| `vault list/create/show/delete` | Yes | Full support |
+| `vault set/unset/entries` | Yes | Full support |
+| `vault get` | No | Local-only (returns decrypted secrets) |
 | `serve` | No | Server command, not applicable |
 
 ## Authentication Persistence
