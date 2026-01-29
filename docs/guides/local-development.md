@@ -40,8 +40,6 @@ mkdir runqy-dev && cd runqy-dev
 
 git clone https://github.com/Publikey/runqy.git
 git clone https://github.com/Publikey/runqy-worker.git
-git clone https://github.com/Publikey/runqy-python.git
-git clone https://github.com/Publikey/test-dummy-task.git
 ```
 
 ### 3. Start PostgreSQL (optional, for full features)
@@ -119,8 +117,8 @@ echo '{"task_id":"t1","payload":{"foo":"bar"}}' | python python/hello_world/dumm
 ```bash
 redis-cli
 
-HSET asynq:t:test-1 type task payload '{"msg":"hello"}' retry 0 max_retry 2 queue inference:default
-LPUSH asynq:inference:default:pending test-1
+HSET asynq:t:test-1 type task payload '{"msg":"hello"}' retry 0 max_retry 2 queue inference_default
+LPUSH asynq:inference_default:pending test-1
 ```
 
 ### Check Results

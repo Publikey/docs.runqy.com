@@ -71,7 +71,7 @@ This guide walks you through setting up a local runqy environment with working e
     cd runqy/app && go build -o runqy .
 
     # Build worker
-    cd ../../runqy-worker && go build -o runqy-worker ./cmd/worker
+    cd ../runqy-worker && go build -o runqy-worker ./cmd/worker
     ```
 
 For more installation options, see the [Installation Guide](installation.md).

@@ -76,11 +76,11 @@ Each queue is defined by its name (key) and the following options:
 
 ## Sub-Queues
 
-Queues support sub-queue naming using the format `{parent}:{sub_queue}`:
+Queues support sub-queue naming using the format `{parent}_{sub_queue}`:
 
-- `inference:high` — High priority inference tasks
-- `inference:low` — Low priority inference tasks
-- `simple:default` — Default simple tasks
+- `inference_high` — High priority inference tasks
+- `inference_low` — Low priority inference tasks
+- `simple_default` — Default simple tasks
 
 Workers register for a parent queue and can process tasks from any of its sub-queues based on priority.
 
