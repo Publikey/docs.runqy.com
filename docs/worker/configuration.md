@@ -34,6 +34,7 @@ deployment:
 | `queue` | string | Yes | Queue name to process tasks from |
 | `concurrency` | int | No | Number of concurrent task processors (default: 1) |
 | `shutdown_timeout` | duration | No | Graceful shutdown timeout (default: 30s) |
+| `RedisStorage` | bool | No | Store full results in Redis (default: false). See [Result Delivery](../guides/result-delivery.md) |
 
 ### `deployment`
 
