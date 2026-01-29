@@ -68,11 +68,13 @@ Each queue is defined by its name (key) and the following options:
 |--------|------|----------|-------------|
 | `git_url` | string | Yes | Git repository URL for task code |
 | `branch` | string | Yes | Git branch to clone |
+| `code_path` | string | No | Path of the task code within the repository (e.g., `simple-task`)  |
 | `startup_cmd` | string | Yes | Command to start the Python process |
 | `startup_timeout_secs` | int | Yes | Timeout for process startup |
 | `requirements_file` | string | No | Path to requirements.txt (default: `requirements.txt`) |
 | `vaults` | list | No | List of vault names to inject as environment variables |
 | `redis_storage` | bool | No | If `true`, task results are written to Redis. If `false`, results are not stored in Redis and must be managed by the task itself (e.g., via webhook). Default: `false` |
+| `git_token` | string | No | Path to your github PAT's. Use the following format `vault://{VAULT-NAME}/{KEY}` (e.g., `vault://github_pats/SIMPLE_TASK`) |
 
 ## Sub-Queues
 
