@@ -89,6 +89,45 @@ if __name__ == "__main__":
     run()
 ```
 
+## Task with Webhook Delivery
+
+For tasks that need to deliver results asynchronously (recommended pattern since results are not stored in Redis by default):
+
+```python
+from runqy_task import task, run
+import requests
+import logging
+
+@task
+def handle(payload: dict, ctx: dict) -> dict:
+    # Extract webhook URL from payload
+    webhook_url = payload.get("webhook_url")
+
+    # Do the work
+    result = process_data(payload["input"])
+
+    # Deliver via webhook
+    if webhook_url:
+        try:
+            response = requests.post(
+                webhook_url,
+                json={"task_id": payload.get("task_id"), "result": result},
+                timeout=30
+            )
+            response.raise_for_status()
+        except Exception as e:
+            logging.error(f"Webhook delivery failed: {e}")
+            # Optionally: raise to trigger retry, or handle gracefully
+
+    # No need to return data when RedisStorage=false (default)
+    return
+
+if __name__ == "__main__":
+    run()
+```
+
+See [Result Delivery Patterns](../guides/result-delivery.md) for more delivery options including S3 upload and database writes.
+
 ## Testing Locally
 
 You can test your task handler without a worker:

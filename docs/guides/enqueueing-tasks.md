@@ -159,7 +159,14 @@ func enqueueTask(ctx context.Context, rdb *redis.Client, queue string, payload m
 
 ## Checking Results
 
-### Poll for Result
+!!! warning "Default: Results Not Stored in Redis"
+    By default, workers do **not** store task results in Redis (`RedisStorage: false`).
+    Only task success/failure status is tracked. Your Python task code should handle
+    result delivery (webhook, storage, etc.). See [Result Delivery Patterns](result-delivery.md).
+
+    Enable `RedisStorage: true` in worker config if you need Redis result storage.
+
+### Poll for Result (when RedisStorage is enabled)
 
 ```python
 import redis
