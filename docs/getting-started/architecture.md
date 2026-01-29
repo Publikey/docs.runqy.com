@@ -71,6 +71,37 @@ The SDK provides a simple interface for writing task handlers:
 - **`run()` function**: Enters the stdin/stdout loop for long-running mode
 - **`run_once()` function**: Processes a single task for one-shot mode
 
+## Queue Organization
+
+### Sub-Queues and Priority
+
+runqy supports sub-queues to handle different priority levels for the same task type. This is particularly useful when different user tiers or applications need the same processing but with different service levels.
+
+**Example: Paid vs Free Users**
+
+```
+inference.premium  (priority: 10) ─┐
+                                   ├─→ Same task code (same deployment)
+inference.standard (priority: 3)  ─┘
+```
+
+Both sub-queues run identical task code, but workers prioritize `inference.premium` tasks. Your API routes users based on their tier:
+
+- Paid user request → enqueue to `inference.premium`
+- Free user request → enqueue to `inference.standard`
+
+When workers have capacity, they process higher-priority sub-queues first, ensuring paid users experience lower latency.
+
+### Queue Naming
+
+Queues use the format `{parent}.{sub_queue}`:
+
+- `inference.premium` — High priority
+- `inference.standard` — Standard priority
+- `simple.default` — Default (when no sub-queue specified)
+
+When you reference a queue without a sub-queue suffix (e.g., `inference`), runqy automatically appends `.default` (→ `inference.default`).
+
 ## Communication Protocol
 
 ### Worker ↔ Python Process

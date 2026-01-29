@@ -37,20 +37,20 @@ When `healthy: false`:
 
 ```bash
 # Count pending tasks
-redis-cli LLEN asynq:inference_default:pending
+redis-cli LLEN asynq:inference.default:pending
 
 # List pending task IDs
-redis-cli LRANGE asynq:inference_default:pending 0 -1
+redis-cli LRANGE asynq:inference.default:pending 0 -1
 ```
 
 ### Active Tasks
 
 ```bash
 # Count active tasks
-redis-cli LLEN asynq:inference_default:active
+redis-cli LLEN asynq:inference.default:active
 
 # List active task IDs
-redis-cli LRANGE asynq:inference_default:active 0 -1
+redis-cli LRANGE asynq:inference.default:active 0 -1
 ```
 
 ## Task Inspection

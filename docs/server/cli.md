@@ -67,14 +67,14 @@ runqy queue list
 Output:
 ```
 QUEUE              PENDING  ACTIVE  SCHEDULED  RETRY  ARCHIVED  COMPLETED  PAUSED
-inference_high     5        2       0          1      0         150        no
-inference_low      12       0       3          0      0         89         no
+inference.high     5        2       0          1      0         150        no
+inference.low      12       0       3          0      0         89         no
 ```
 
 ### Inspect Queue
 
 ```bash
-runqy queue inspect inference_high
+runqy queue inspect inference.high
 ```
 
 Shows detailed queue information including status, pause state, memory usage, and task counts.
@@ -83,10 +83,10 @@ Shows detailed queue information including status, pause state, memory usage, an
 
 ```bash
 # Pause a queue (stops processing new tasks)
-runqy queue pause inference_high
+runqy queue pause inference.high
 
 # Resume a paused queue
-runqy queue unpause inference_high
+runqy queue unpause inference.high
 ```
 
 ## Task Commands
@@ -95,13 +95,13 @@ runqy queue unpause inference_high
 
 ```bash
 # Enqueue a task with JSON payload
-runqy task enqueue --queue inference_high --payload '{"prompt":"Hello world","width":1024}'
+runqy task enqueue --queue inference.high --payload '{"prompt":"Hello world","width":1024}'
 
 # Short flags
-runqy task enqueue -q inference_high -p '{"msg":"test"}'
+runqy task enqueue -q inference.high -p '{"msg":"test"}'
 
 # With custom timeout (seconds)
-runqy task enqueue -q inference_high -p '{"data":"value"}' --timeout 300
+runqy task enqueue -q inference.high -p '{"data":"value"}' --timeout 300
 ```
 
 **Enqueue Flags:**
@@ -116,31 +116,31 @@ runqy task enqueue -q inference_high -p '{"data":"value"}' --timeout 300
 
 ```bash
 # List pending tasks in a queue
-runqy task list inference_high
+runqy task list inference.high
 
 # List tasks by state
-runqy task list inference_high --state pending
-runqy task list inference_high --state active
-runqy task list inference_high --state scheduled
-runqy task list inference_high --state retry
-runqy task list inference_high --state archived
-runqy task list inference_high --state completed
+runqy task list inference.high --state pending
+runqy task list inference.high --state active
+runqy task list inference.high --state scheduled
+runqy task list inference.high --state retry
+runqy task list inference.high --state archived
+runqy task list inference.high --state completed
 
 # Limit number of results
-runqy task list inference_high --state pending --limit 20
+runqy task list inference.high --state pending --limit 20
 ```
 
 ### Get Task Details
 
 ```bash
-runqy task get inference_high abc123-task-id
+runqy task get inference.high abc123-task-id
 ```
 
 Output:
 ```
 Task ID:     abc123-task-id
 Type:        task
-Queue:       inference_high
+Queue:       inference.high
 State:       completed
 Max Retry:   3
 Retried:     0
@@ -155,7 +155,7 @@ Timeout:     10m0s
 runqy task cancel abc123-task-id
 
 # Delete a task from a queue
-runqy task delete inference_high abc123-task-id
+runqy task delete inference.high abc123-task-id
 ```
 
 ## Worker Commands
@@ -169,8 +169,8 @@ runqy worker list
 Output:
 ```
 WORKER_ID                              STATUS  QUEUES          CONCURRENCY  LAST_BEAT  STALE
-worker-abc123-def456                   ready   inference_high  1            5s         no
-worker-xyz789-uvw012                   ready   inference_low   1            3s         no
+worker-abc123-def456                   ready   inference.high  1            5s         no
+worker-xyz789-uvw012                   ready   inference.low   1            3s         no
 ```
 
 ### Get Worker Info
@@ -183,7 +183,7 @@ Output:
 ```
 Worker ID:   worker-abc123-def456
 Status:      ready
-Queues:      inference_high
+Queues:      inference.high
 Concurrency: 1
 Started At:  2024-01-15 10:30:00
 Last Beat:   2024-01-15 10:35:45 (5s ago)
@@ -200,9 +200,9 @@ runqy config list
 Output:
 ```
 NAME              PRIORITY  PROVIDER  MODE          GIT_URL
-inference_high    10        worker    long_running  https://github.com/org/worker.git
-inference_low     5         worker    long_running  https://github.com/org/worker.git
-simple_default    1         worker    one_shot      https://github.com/org/simple.git
+inference.high    10        worker    long_running  https://github.com/org/worker.git
+inference.low     5         worker    long_running  https://github.com/org/worker.git
+simple.default    1         worker    one_shot      https://github.com/org/simple.git
 ```
 
 ### Reload Configurations
@@ -408,7 +408,7 @@ runqy -s https://runqy.example.com:3000 queue list
 runqy -s https://server:3000 -k API_KEY queue list
 
 # Enqueue a task on remote server
-runqy -s https://server:3000 -k API_KEY task enqueue -q inference_high -p '{"msg":"hello"}'
+runqy -s https://server:3000 -k API_KEY task enqueue -q inference.high -p '{"msg":"hello"}'
 
 # List workers on remote server
 runqy -s https://server:3000 -k API_KEY worker list
