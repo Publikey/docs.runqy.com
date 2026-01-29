@@ -213,11 +213,13 @@ from runqy_task import task, run
 def generate_text(payload, ctx):
     # Access vault entries as environment variables
     openai_key = os.environ.get("OPENAI_API_KEY")
-    hf_token = os.environ.get("HF_TOKEN")
 
     # Use the secrets
-    import openai
-    openai.api_key = openai_key
+    from openai import OpenAI
+    client = OpenAI(
+        
+        api_key=openai_key,
+    )
 
     response = openai.ChatCompletion.create(
         model="gpt-4",
