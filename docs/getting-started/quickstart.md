@@ -237,8 +237,8 @@ server:
 
 worker:
   queues:
-    - "quickstart-oneshot_default"
-    - "quickstart-longrunning_default"
+    - "quickstart-oneshot.default"
+    - "quickstart-longrunning.default"
 ```
 
 The worker will:
@@ -260,7 +260,7 @@ In a new terminal:
       -H "Authorization: Bearer dev-api-key" \
       -H "Content-Type: application/json" \
       -d '{
-        "queue": "quickstart-oneshot_default",
+        "queue": "quickstart-oneshot.default",
         "timeout": 60,
         "data": {"operation": "uppercase", "data": "hello world"}
       }'
@@ -272,7 +272,7 @@ In a new terminal:
     curl.exe -X POST http://localhost:3000/queue/add `
       -H "Authorization: Bearer dev-api-key" `
       -H "Content-Type: application/json" `
-      -d '{\"queue\": \"quickstart-oneshot_default\", \"timeout\": 60, \"data\": {\"operation\": \"uppercase\", \"data\": \"hello world\"}}'
+      -d '{\"queue\": \"quickstart-oneshot.default\", \"timeout\": 60, \"data\": {\"operation\": \"uppercase\", \"data\": \"hello world\"}}'
     ```
 
 Response:
@@ -282,7 +282,7 @@ Response:
   "info": {
     "id": "abc123...",
     "state": "pending",
-    "queue": "quickstart-oneshot_default",
+    "queue": "quickstart-oneshot.default",
     ...
   },
   "data": {...}
@@ -292,9 +292,12 @@ Response:
 !!! tip "Task ID"
     Use the `id` from the response to check the result in the next step.
 
+!!! note "Queue name shorthand"
+    You can omit the `.default` suffix when enqueueing. For example, `quickstart-oneshot` automatically resolves to `quickstart-oneshot.default`.
+
 ### Try Long-Running Mode
 
-To try long-running mode, just enqueue to `quickstart-longrunning_default` — the worker already listens on both queues.
+To try long-running mode, just enqueue to `quickstart-longrunning.default` — the worker already listens on both queues.
 
 ## 6. Check the Result
 
@@ -318,7 +321,7 @@ Response:
 {
   "info": {
     "state": "completed",
-    "queue": "quickstart-oneshot_default",
+    "queue": "quickstart-oneshot.default",
     "result": {"result": "HELLO WORLD"}
   }
 }

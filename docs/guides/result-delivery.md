@@ -78,7 +78,7 @@ if __name__ == "__main__":
 **Enqueueing with webhook:**
 
 ```python
-task_id = enqueue_task("inference_default", {
+task_id = enqueue_task("inference.default", {
     "input": "process this",
     "webhook_url": "https://api.example.com/webhooks/task-complete"
 })

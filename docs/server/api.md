@@ -89,7 +89,7 @@ Enqueue a new task.
 
 ```json
 {
-  "queue": "inference_high",
+  "queue": "inference.high",
   "timeout": 300,
   "data": {
     "prompt": "Hello world",
@@ -104,7 +104,7 @@ Enqueue a new task.
 {
   "info": {
     "id": "task-uuid",
-    "queue": "inference_high",
+    "queue": "inference.high",
     "state": "pending"
   }
 }
@@ -120,7 +120,7 @@ Get task status and result. The queue is automatically determined from the task'
 {
   "info": {
     "id": "task-uuid",
-    "queue": "inference_high",
+    "queue": "inference.high",
     "state": "completed",
     "result": "..."
   }

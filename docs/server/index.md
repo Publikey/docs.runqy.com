@@ -24,7 +24,7 @@ The runqy server includes a powerful CLI for managing your task queue system. Th
 ```bash
 # Local operations
 runqy queue list
-runqy task enqueue -q inference_high -p '{"msg":"hello"}'
+runqy task enqueue -q inference.high -p '{"msg":"hello"}'
 runqy worker list
 
 # Remote operations (with saved credentials)

@@ -23,13 +23,30 @@ runqy uses an asynq-compatible key format:
 
 ## Queue Naming
 
-Queues use the format `{parent}_{sub_queue}`:
+Sub-queues let you assign different priorities to the same task type. A common use case is routing paid users to a high-priority sub-queue while free users go to a lower-priority sub-queue—both execute the same task code, but paid users get processed first.
 
-- `inference_high` — High priority inference
-- `inference_low` — Low priority inference
-- `simple_default` — Default simple queue
+Queues use the format `{parent}.{sub_queue}`:
 
-Workers register for a parent queue (e.g., `inference`) and process tasks from all its sub-queues.
+- `inference.premium` — High priority (paid users)
+- `inference.standard` — Standard priority (free users)
+- `simple.default` — Default simple queue
+
+Workers register for a parent queue (e.g., `inference`) and process tasks from all its sub-queues, prioritizing higher-priority sub-queues first.
+
+### Automatic Default Fallback
+
+When you specify a queue name without the sub-queue suffix, runqy automatically appends `.default`:
+
+| You provide | Resolves to |
+|-------------|-------------|
+| `inference` | `inference.default` |
+| `simple` | `simple.default` |
+| `inference.high` | `inference.high` (unchanged) |
+
+This works in the API, CLI, and direct Redis operations (the server normalizes the queue name before processing).
+
+!!! warning "Queue must exist"
+    If the resolved queue (e.g., `inference.default`) doesn't exist in the configuration, the operation fails with an error.
 
 ## Examples
 
@@ -44,10 +61,10 @@ HSET asynq:t:my-task-id \
   payload '{"input": "hello world"}' \
   retry 0 \
   max_retry 3 \
-  queue inference_default
+  queue inference.default
 
 # Push to pending queue
-LPUSH asynq:inference_default:pending my-task-id
+LPUSH asynq:inference.default:pending my-task-id
 ```
 
 ### Python
@@ -78,7 +95,7 @@ def enqueue_task(queue: str, payload: dict, max_retry: int = 3) -> str:
     return task_id
 
 # Usage
-task_id = enqueue_task("inference_default", {"input": "hello"})
+task_id = enqueue_task("inference.default", {"input": "hello"})
 print(f"Enqueued task: {task_id}")
 ```
 
@@ -109,7 +126,7 @@ async function enqueueTask(queue, payload, maxRetry = 3) {
 }
 
 // Usage
-const taskId = await enqueueTask('inference_default', { input: 'hello' });
+const taskId = await enqueueTask('inference.default', { input: 'hello' });
 console.log(`Enqueued task: ${taskId}`);
 ```
 
@@ -199,10 +216,10 @@ print(f"Result: {result}")
 redis-cli HGETALL asynq:t:my-task-id
 
 # Check if task is pending
-redis-cli LRANGE asynq:inference_default:pending 0 -1
+redis-cli LRANGE asynq:inference.default:pending 0 -1
 
 # Check if task is active (being processed)
-redis-cli LRANGE asynq:inference_default:active 0 -1
+redis-cli LRANGE asynq:inference.default:active 0 -1
 
 # Get result
 redis-cli GET asynq:result:my-task-id

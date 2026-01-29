@@ -60,7 +60,7 @@ from runqy_python import RunqyClient
 client = RunqyClient("http://localhost:3000", api_key="your-api-key")
 
 # Enqueue a task
-task = client.enqueue("inference_default", {"input": "hello"})
+task = client.enqueue("inference.default", {"input": "hello"})
 print(f"Task ID: {task.task_id}")
 
 # Check result
