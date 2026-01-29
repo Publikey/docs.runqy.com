@@ -3,7 +3,7 @@
 ## From PyPI
 
 ```bash
-pip install runqy-task
+pip install runqy-python
 ```
 
 ## From Source
@@ -28,7 +28,7 @@ pip install -e .
 ## Verify Installation
 
 ```python
-from runqy_task import task, load, run
+from runqy_python import task, load, run
 
-print("runqy-task installed successfully!")
+print("runqy-python installed successfully!")
 ```

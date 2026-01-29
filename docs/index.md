@@ -18,7 +18,7 @@ runqy is a task queue system where workers are stateless. They receive all confi
 
 - **[runqy Server](server/index.md)** — Go HTTP server for worker registration, queue management, and REST API
 - **[runqy Worker](worker/index.md)** — Go binary that processes tasks from Redis and supervises Python processes
-- **[runqy-task](python-sdk/index.md)** — Python SDK with `@task` and `@load` decorators for building task handlers
+- **[runqy-python](python-sdk/index.md)** — Python SDK with `@task` and `@load` decorators for building task handlers (also includes a client for enqueuing)
 
 ## Quick Links
 

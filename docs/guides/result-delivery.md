@@ -32,7 +32,7 @@ Common patterns:
 Pass a `webhook_url` in your task payload. When the task completes, POST the result to that URL.
 
 ```python
-from runqy_task import task, run
+from runqy_python import task, run
 import requests
 import logging
 
@@ -96,7 +96,7 @@ task_id = enqueue_task("inference_default", {
 For large results like images or videos, upload to cloud storage and optionally notify via webhook with the URL.
 
 ```python
-from runqy_task import task, load, run
+from runqy_python import task, load, run
 import boto3
 import requests
 import uuid
@@ -158,7 +158,7 @@ presigned_url = s3.generate_presigned_url(
 Write results directly to your application database:
 
 ```python
-from runqy_task import task, load, run
+from runqy_python import task, load, run
 import psycopg2
 
 @load
@@ -195,7 +195,7 @@ if __name__ == "__main__":
 Publish results to a message queue for downstream processing:
 
 ```python
-from runqy_task import task, load, run
+from runqy_python import task, load, run
 import pika
 import json
 

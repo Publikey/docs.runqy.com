@@ -3,7 +3,7 @@
 ## Basic Task Handler
 
 ```python
-from runqy_task import task, run
+from runqy_python import task, run
 
 @task
 def handle(payload: dict, ctx: dict) -> dict:
@@ -17,7 +17,7 @@ if __name__ == "__main__":
 ## ML Inference Task
 
 ```python
-from runqy_task import task, load, run
+from runqy_python import task, load, run
 import torch
 
 @load
@@ -47,7 +47,7 @@ if __name__ == "__main__":
 For tasks that don't benefit from keeping the process warm:
 
 ```python
-from runqy_task import task, run_once
+from runqy_python import task, run_once
 
 @task
 def handle(payload: dict, ctx: dict) -> dict:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
 ## Task with Database Connection
 
 ```python
-from runqy_task import task, load, run
+from runqy_python import task, load, run
 import psycopg2
 
 @load
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 For tasks that need to deliver results asynchronously (recommended pattern since results are not stored in Redis by default):
 
 ```python
-from runqy_task import task, run
+from runqy_python import task, run
 import requests
 import logging
 

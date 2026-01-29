@@ -335,7 +335,7 @@ The quickstart uses example tasks from `runqy/examples/`:
 === "One-Shot Mode"
 
     ```python title="examples/quickstart-oneshot/main.py"
-    from runqy_task import task, run_once
+    from runqy_python import task, run_once
 
     @task
     def process(payload: dict) -> dict:
@@ -358,7 +358,7 @@ The quickstart uses example tasks from `runqy/examples/`:
 === "Long-Running Mode"
 
     ```python title="examples/quickstart-longrunning/main.py"
-    from runqy_task import task, load, run
+    from runqy_python import task, load, run
 
     @load
     def setup():

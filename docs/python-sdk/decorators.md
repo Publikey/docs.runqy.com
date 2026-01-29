@@ -5,7 +5,7 @@
 Marks a function that runs once at startup. The return value is passed to the task handler as context.
 
 ```python
-from runqy_task import load
+from runqy_python import load
 
 @load
 def setup():
@@ -35,7 +35,7 @@ def setup() -> Any
 Marks a function that handles each incoming task.
 
 ```python
-from runqy_task import task
+from runqy_python import task
 
 @task
 def handle(payload: dict, ctx: dict) -> dict:
@@ -68,7 +68,7 @@ To signal that a task failed but should be retried, raise an exception. The work
 Enters the stdin/stdout loop for long-running mode.
 
 ```python
-from runqy_task import run
+from runqy_python import run
 
 if __name__ == "__main__":
     run()
@@ -88,7 +88,7 @@ This function:
 Processes a single task for one-shot mode.
 
 ```python
-from runqy_task import run_once
+from runqy_python import run_once
 
 if __name__ == "__main__":
     run_once()

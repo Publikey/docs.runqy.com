@@ -35,7 +35,7 @@ runqy uses a server-driven bootstrap architecture where workers are stateless an
          │ stdin/stdout JSON
          ↓
 ┌──────────────────────────────────────────────────────────────────┐
-│                    Python Task (runqy-task SDK)                  │
+│                    Python Task (runqy-python SDK)                  │
 │                                                                  │
 │  @load   → runs once at startup, returns ctx (e.g., ML model)   │
 │  @task   → handles each task, receives payload + ctx            │
@@ -62,7 +62,7 @@ The worker is the execution engine:
 - **Process supervision**: Monitors the Python process health, reports status via heartbeat
 - **Result handling**: Writes task results back to Redis
 
-### runqy-task (Python SDK)
+### runqy-python (Python SDK)
 
 The SDK provides a simple interface for writing task handlers:
 

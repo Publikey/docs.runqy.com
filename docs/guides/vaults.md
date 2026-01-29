@@ -207,7 +207,7 @@ When a worker registers for this queue, the server:
 
 ```python
 import os
-from runqy_task import task, run
+from runqy_python import task, run
 
 @task
 def generate_text(payload, ctx):

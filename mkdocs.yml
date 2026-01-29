@@ -78,7 +78,7 @@ nav:
       - Overview: worker/index.md
       - Configuration: worker/configuration.md
       - Deployment: worker/deployment.md
-  - runqy-task (Python SDK):
+  - runqy-python (Python SDK):
       - Overview: python-sdk/index.md
       - Installation: python-sdk/installation.md
       - Decorators: python-sdk/decorators.md

@@ -1,20 +1,25 @@
-# runqy-task Python SDK
+# runqy-python SDK
 
-The `runqy-task` Python SDK provides decorators for writing task handlers that integrate with runqy workers.
+The `runqy-python` SDK provides simple decorators for writing task handlers that run on runqy workers. It also includes a client for enqueuing tasks.
 
 ## Overview
 
-The SDK provides:
+**Task Handlers** — The core of the SDK:
 
-- **`@load` decorator**: Define a function that runs once at startup
-- **`@task` decorator**: Define a function that handles each task
+- **`@load` decorator**: Define a function that runs once at startup (e.g., load ML models)
+- **`@task` decorator**: Define a function that handles each incoming task
 - **`run()` function**: Enter the stdin/stdout loop for long-running mode
-- **`run_once()` function**: Process a single task for one-shot mode
+- **`run_once()` function**: Process a single task and exit (one-shot mode)
+
+**Client** — Also included for convenience:
+
+- **`RunqyClient` class**: HTTP client for enqueuing tasks
+- **`enqueue()` function**: Quick enqueue without creating a client instance
 
 ## Installation
 
 ```bash
-pip install runqy-task
+pip install runqy-python
 ```
 
 Or install from source:
@@ -23,10 +28,10 @@ Or install from source:
 pip install git+https://github.com/Publikey/runqy-python.git
 ```
 
-## Quick Example
+## Task Handler Example
 
 ```python
-from runqy_task import task, load, run
+from runqy_python import task, load, run
 
 @load
 def setup():
@@ -45,15 +50,33 @@ if __name__ == "__main__":
     run()
 ```
 
-## Source Code
+## Client Example
 
-The SDK is implemented in Python:
+The SDK also includes a client for enqueuing tasks from Python:
+
+```python
+from runqy_python import RunqyClient
+
+client = RunqyClient("http://localhost:3000", api_key="your-api-key")
+
+# Enqueue a task
+task = client.enqueue("inference_default", {"input": "hello"})
+print(f"Task ID: {task.task_id}")
+
+# Check result
+result = client.get_task(task.task_id)
+print(f"State: {result.state}, Result: {result.result}")
+```
+
+## Source Code
 
 ```
 runqy-python/
-└── src/runqy_task/
-    ├── decorator.py     # @task, @load decorators (global state)
-    └── runner.py        # run(), run_once() stdin/stdout loop
+└── src/runqy_python/
+    ├── __init__.py      # Package exports
+    ├── decorator.py     # @task, @load decorators
+    ├── runner.py        # run(), run_once() functions
+    └── client.py        # RunqyClient for enqueuing tasks
 ```
 
 ## Related
