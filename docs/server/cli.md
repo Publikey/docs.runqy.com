@@ -260,63 +260,11 @@ runqy config create -f ./queue.yaml --force
 ### Remove Queue Configuration
 
 ```bash
-# Remove a queue (fails if queue has pending tasks)
 runqy config remove myqueue
-
-# Force remove even if queue has pending tasks
-runqy config remove myqueue --force
 
 # Or with flag
 runqy config remove --name myqueue
 ```
-
-**Remove Flags:**
-
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--name` | Queue name to remove | - |
-| `--force` | Force removal even if queue has pending tasks | `false` |
-
-When a queue is removed, all associated Redis data is also cleaned up:
-- Pending, active, scheduled, retry, archived, completed tasks
-- Task statistics and counters
-- Queue from the `asynq:queues` registry
-
-### Sync Redis with PostgreSQL
-
-Audit Redis for orphaned queues (queues that exist in Redis but not in the database) and optionally clean them up.
-
-```bash
-# Dry-run: show orphaned queues with their task counts
-runqy config sync
-
-# Remove empty orphaned queues
-runqy config sync --clean
-
-# Force remove all orphaned queues (including non-empty)
-runqy config sync --clean --force
-```
-
-**Sync Flags:**
-
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--clean` | Actually remove orphaned queues (default is dry-run) | `false` |
-| `--force` | Force removal even if queues have tasks | `false` |
-
-Example output (dry-run):
-```
-Found 2 orphaned queue(s) in Redis (not in PostgreSQL):
-
-QUEUE              PENDING  ACTIVE  SCHEDULED  RETRY  ARCHIVED  COMPLETED
-old_queue          0        0       0          0      0         45
-abandoned_job      3        0       0          0      0         12
-
-Use --clean to remove empty queues, or --clean --force to remove all.
-```
-
-!!! note
-    `config sync` is local-only and cannot be used in remote mode.
 
 ## Vault Commands
 
@@ -476,9 +424,8 @@ runqy -s https://server:3000 -k API_KEY config reload
 | `queue list/inspect/pause/unpause` | Yes | Full support |
 | `task enqueue/list/get/cancel/delete` | Yes | Full support |
 | `worker list/info` | Yes | Full support |
-| `config list/reload/create/remove` | Yes | Full support (remove supports --force) |
+| `config list/reload/create/remove` | Yes | Full support |
 | `config validate` | No | Local-only (validates local YAML files) |
-| `config sync` | No | Local-only (requires direct Redis access) |
 | `vault list/create/show/delete` | Yes | Full support |
 | `vault set/unset/entries` | Yes | Full support |
 | `vault get` | No | Local-only (returns decrypted secrets) |
