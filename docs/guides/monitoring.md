@@ -1,5 +1,20 @@
 # Monitoring
 
+runqy provides multiple monitoring options, from simple Redis queries to full Prometheus/Grafana integration.
+
+## Web Dashboard
+
+The built-in web dashboard at `/monitoring` provides real-time visibility into your queues and workers.
+
+### Dashboard Features
+
+- **Task History**: View processed/failed task counts over time (Today, 7D, 30D)
+- **Queue Sizes**: Live view of pending, active, retry, and archived tasks per queue
+- **Worker Status**: Monitor worker health, active tasks, and heartbeats
+- **Task Management**: Inspect, retry, or delete tasks directly from the UI
+
+The dashboard works out of the box using Redis data. No additional setup required.
+
 ## Worker Health
 
 Workers report their health status via Redis heartbeat.
@@ -67,28 +82,248 @@ redis-cli HGETALL asynq:t:task-id-here
 redis-cli GET asynq:result:task-id-here
 ```
 
-## Prometheus Metrics
+---
 
-For production monitoring, consider adding Prometheus metrics to your worker:
+## Prometheus Integration (Optional)
 
-```go
-// Example: Expose metrics endpoint
-http.Handle("/metrics", promhttp.Handler())
-go http.ListenAndServe(":9090", nil)
+For advanced monitoring with sub-second time-series data, runqy integrates with Prometheus. This is optional—the dashboard works without it.
+
+### What Prometheus Adds
+
+| Feature | Without Prometheus | With Prometheus |
+|---------|-------------------|-----------------|
+| Task history | Daily aggregates (90 days) | Sub-second time-series |
+| Real-time throughput | Snapshot totals | Rate per second |
+| Custom dashboards | Basic dashboard | Full Grafana support |
+| Alerting | Manual monitoring | AlertManager integration |
+| Retention | 90 days in Redis | Configurable (years) |
+
+### Architecture
+
+```
+┌─────────────────┐     scrape      ┌─────────────────┐
+│  runqy server   │ ───────────────>│   Prometheus    │
+│  :3000/metrics  │     /metrics    │   :9090         │
+└─────────────────┘                 └─────────────────┘
+                                           │
+                                           │ query
+                                           ▼
+                                    ┌─────────────────┐
+                                    │    Grafana      │
+                                    │    :3001        │
+                                    └─────────────────┘
 ```
 
-Common metrics to track:
+### Setup
 
-- `runqy_tasks_processed_total` — Counter of processed tasks
-- `runqy_task_duration_seconds` — Histogram of task duration
-- `runqy_worker_healthy` — Gauge (1 = healthy, 0 = unhealthy)
-- `runqy_queue_pending_tasks` — Gauge of pending tasks per queue
+#### 1. Configure Prometheus to Scrape runqy
+
+Add to your `prometheus.yml`:
+
+```yaml
+scrape_configs:
+  - job_name: 'runqy'
+    static_configs:
+      - targets: ['localhost:3000']  # runqy server address
+    scrape_interval: 15s
+    metrics_path: /metrics
+```
+
+#### 2. Set the Prometheus Address (Optional)
+
+To enable Prometheus-powered charts in the dashboard:
+
+```bash
+export PROMETHEUS_ADDRESS=http://localhost:9090
+```
+
+!!! note
+    This environment variable is optional. Without it, the dashboard uses Redis data which works perfectly for most use cases. Set this only if you want sub-second time-series data in the dashboard.
+
+### Available Metrics
+
+runqy exposes the following Prometheus metrics at `/metrics`:
+
+#### Queue Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `asynq_queue_size` | Gauge | Number of tasks in each state (pending, active, retry, archived) |
+| `asynq_queue_latency_seconds` | Gauge | Time since oldest pending task was enqueued |
+| `asynq_queue_memory_usage_approx_bytes` | Gauge | Approximate memory usage per queue |
+
+#### Task Metrics
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `asynq_tasks_processed_total` | Counter | Total tasks processed (labeled by queue) |
+| `asynq_tasks_failed_total` | Counter | Total tasks failed (labeled by queue) |
+
+### Example Queries
+
+**Tasks processed per second:**
+```promql
+rate(asynq_tasks_processed_total[5m])
+```
+
+**Tasks failed per second:**
+```promql
+rate(asynq_tasks_failed_total[5m])
+```
+
+**Error rate percentage:**
+```promql
+rate(asynq_tasks_failed_total[5m]) / rate(asynq_tasks_processed_total[5m]) * 100
+```
+
+**Queue depth (pending tasks):**
+```promql
+asynq_queue_size{state="pending"}
+```
+
+**Queue latency:**
+```promql
+asynq_queue_latency_seconds
+```
+
+### Grafana Dashboard
+
+Import the asynq Grafana dashboard for a pre-built visualization:
+
+1. In Grafana, go to **Dashboards > Import**
+2. Enter dashboard ID: `18863` (asynq dashboard)
+3. Select your Prometheus data source
+4. Click **Import**
+
+Or create custom panels using the queries above.
+
+### Docker Compose Example
+
+Here's a complete setup with Prometheus and Grafana:
+
+```yaml
+version: '3.8'
+
+services:
+  runqy:
+    image: ghcr.io/publikey/runqy:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=
+      - RUNQY_API_KEY=your-api-key
+      - PROMETHEUS_ADDRESS=http://prometheus:9090  # Optional
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+
+volumes:
+  grafana-data:
+```
+
+Create `prometheus.yml`:
+
+```yaml
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'runqy'
+    static_configs:
+      - targets: ['runqy:3000']
+```
 
 ## Alerting
 
-Set up alerts for:
+### Prometheus AlertManager
 
-- **Worker unhealthy**: `runqy_worker_healthy == 0`
-- **High queue depth**: `runqy_queue_pending_tasks > threshold`
-- **Task failures**: `rate(runqy_tasks_failed_total[5m]) > threshold`
-- **Slow tasks**: `histogram_quantile(0.95, runqy_task_duration_seconds) > threshold`
+Example alert rules (`alerts.yml`):
+
+```yaml
+groups:
+  - name: runqy
+    rules:
+      # High queue depth
+      - alert: HighQueueDepth
+        expr: asynq_queue_size{state="pending"} > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High queue depth on {{ $labels.queue }}"
+          description: "Queue {{ $labels.queue }} has {{ $value }} pending tasks"
+
+      # High error rate
+      - alert: HighErrorRate
+        expr: >
+          rate(asynq_tasks_failed_total[5m]) / rate(asynq_tasks_processed_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.queue }}"
+          description: "Queue {{ $labels.queue }} has {{ $value | humanizePercentage }} error rate"
+
+      # Queue latency
+      - alert: HighQueueLatency
+        expr: asynq_queue_latency_seconds > 300
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency on {{ $labels.queue }}"
+          description: "Queue {{ $labels.queue }} has {{ $value | humanizeDuration }} latency"
+
+      # No tasks processed (potential worker issue)
+      - alert: NoTasksProcessed
+        expr: >
+          increase(asynq_tasks_processed_total[10m]) == 0
+          and asynq_queue_size{state="pending"} > 0
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No tasks processed on {{ $labels.queue }}"
+          description: "Queue {{ $labels.queue }} has pending tasks but none processed in 10 minutes"
+```
+
+### Key Metrics to Monitor
+
+| Metric | Alert Threshold | Description |
+|--------|----------------|-------------|
+| Queue depth | > 1000 pending | Tasks accumulating faster than processing |
+| Error rate | > 10% | High failure rate indicates issues |
+| Queue latency | > 5 minutes | Tasks waiting too long |
+| Worker health | `healthy: false` | Worker process crashed |
+
+## Best Practices
+
+1. **Start with the dashboard** - The built-in dashboard covers most monitoring needs
+2. **Add Prometheus for scale** - When you need historical data beyond 90 days or sub-second metrics
+3. **Set up alerts early** - Don't wait for production issues to configure alerting
+4. **Monitor worker health** - A crashed worker won't process tasks and won't recover automatically
+5. **Track error rates** - Sudden spikes often indicate code bugs or upstream service issues

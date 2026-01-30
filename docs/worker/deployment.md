@@ -84,11 +84,37 @@ spec:
               cpu: "1000m"
 ```
 
+## Queue Configuration
+
+Workers can listen on queues in two ways:
+
+### Listen on all sub-queues
+
+```yaml
+worker:
+  queue: "inference"  # Listens on ALL sub-queues (.high, .low, .default, etc.)
+```
+
+### Listen on specific sub-queues only
+
+```yaml
+worker:
+  queues:
+    - inference.high
+    - inference.low
+```
+
+This listens **only** on `inference.high` and `inference.low`, ignoring other sub-queues like `inference.medium`.
+
+!!! note "Shared Runtime"
+    Sub-queues of the same parent always share one code deployment and one runtime process. Configuring `[inference.high, inference.low]` deploys code once and starts one Python process.
+
 ## Scaling
 
 To handle more tasks, run multiple worker instances:
 
-- Each worker processes one queue with one Python process
+- Each worker processes one parent queue with one Python process
+- Sub-queues of the same parent share a single runtime
 - Workers are stateless and can be scaled horizontally
 - Use container orchestration (Kubernetes, Docker Swarm) for auto-scaling
 

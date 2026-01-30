@@ -140,6 +140,16 @@ This applies to:
 !!! warning "Queue must exist"
     If the resolved queue (e.g., `inference.default`) doesn't exist in the configuration, an error is returned. The fallback only adds the `.default` suffix—it doesn't create the queue automatically.
 
+## Monitoring
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `PROMETHEUS_ADDRESS` | No | Prometheus server URL (e.g., `http://localhost:9090`). Enables time-series charts in the dashboard. If not set, the dashboard uses Redis-based historical data. |
+
+The server always exposes Prometheus metrics at `/metrics` regardless of this setting. See the [Monitoring Guide](../guides/monitoring.md) for full setup instructions.
+
 ## Vaults
 
 Vaults provide secure storage for secrets that are injected into workers as environment variables.
