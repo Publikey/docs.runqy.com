@@ -15,6 +15,43 @@ The built-in web dashboard at `/monitoring` provides real-time visibility into y
 
 The dashboard works out of the box using Redis data. No additional setup required.
 
+!!! tip "Headless Mode"
+    For API-only deployments (e.g., headless servers, CI/CD pipelines), disable the dashboard with `--no-ui`:
+    ```bash
+    runqy serve --no-ui
+    ```
+    The REST API, Prometheus metrics (`/metrics`), and Swagger docs remain available.
+
+### Authentication
+
+The dashboard requires authentication to protect sensitive queue and task data.
+
+#### First-Time Setup
+
+On first access, you'll be prompted to create an admin account:
+
+1. Navigate to `/monitoring`
+2. You'll be redirected to `/monitoring/setup`
+3. Enter your email and password (minimum 8 characters)
+4. Click "Create Admin Account"
+
+After setup, the dashboard is protected and requires login.
+
+#### Login Flow
+
+1. Navigate to `/monitoring`
+2. Enter your email and password
+3. You'll be logged in for 7 days (JWT cookie)
+
+#### Session Management
+
+- Sessions expire after 7 days
+- Click "Logout" in the sidebar to end your session
+- If your session expires, you'll be redirected to the login page
+
+!!! note "Single Admin"
+    The dashboard supports a single admin account. There is no password reset feature—if you forget your password, you'll need to delete the `admin_user` row from the database and re-run setup.
+
 ## Worker Health
 
 Workers report their health status via Redis heartbeat.

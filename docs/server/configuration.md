@@ -148,7 +148,7 @@ This applies to:
 |----------|----------|-------------|
 | `PROMETHEUS_ADDRESS` | No | Prometheus server URL (e.g., `http://localhost:9090`). Enables time-series charts in the dashboard. If not set, the dashboard uses Redis-based historical data. |
 
-The server always exposes Prometheus metrics at `/metrics` regardless of this setting. See the [Monitoring Guide](../guides/monitoring.md) for full setup instructions.
+The server always exposes Prometheus metrics at `/metrics` regardless of this setting. See the [Monitoring Guide](../guides/monitoring.md) for full setup instructions including dashboard authentication.
 
 ## Vaults
 

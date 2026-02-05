@@ -42,6 +42,9 @@ runqy serve --config ./my-deployment
 
 # Start with git-based config and auto-reload
 runqy serve --config-repo https://github.com/org/configs.git --watch
+
+# Start without monitoring dashboard (API only)
+runqy serve --no-ui
 ```
 
 **Serve Flags:**
@@ -50,6 +53,7 @@ runqy serve --config-repo https://github.com/org/configs.git --watch
 |------|-------------|---------|
 | `--config` | Path to queue workers config directory | `QUEUE_WORKERS_DIR` env |
 | `--watch` | Enable file/git watching for config auto-reload | `false` |
+| `--no-ui` | Disable the monitoring web dashboard | `false` |
 | `--config-repo` | GitHub repo URL for configs | - |
 | `--config-branch` | Git branch | `main` |
 | `--config-path` | Path within repo to YAML files | - |
