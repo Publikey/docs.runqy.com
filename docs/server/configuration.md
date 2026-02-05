@@ -121,6 +121,40 @@ Queues use the format `{parent}.{sub_queue}`:
 
 Workers register for a parent queue and can process tasks from any of its sub-queues based on priority.
 
+### Queue Creation Behavior
+
+When you define a queue in the configuration, the sub-queues created depend on whether you explicitly define them:
+
+| Configuration | Sub-queues created |
+|---------------|-------------------|
+| No `sub_queues` defined | `.default` is created automatically |
+| `sub_queues` explicitly defined | Only the listed sub-queues are created (NO `.default`) |
+
+**Example 1: No sub-queues → `.default` is created**
+```yaml
+queues:
+  myqueue:
+    deployment: ...
+# Creates: myqueue.default
+```
+
+**Example 2: Explicit sub-queues → only those are created**
+```yaml
+queues:
+  myqueue:
+    sub_queues:
+      - name: high
+        priority: 10
+      - name: low
+        priority: 3
+    deployment: ...
+# Creates: myqueue.high, myqueue.low
+# Does NOT create: myqueue.default
+```
+
+!!! warning "Fallback to `.default` may fail"
+    If you reference `myqueue` (without sub-queue suffix) and `.default` doesn't exist (because you defined explicit sub-queues), the operation will fail. Always use the full queue name when sub-queues are explicitly defined.
+
 ### Automatic Default Fallback
 
 When a queue name is referenced without a sub-queue suffix, runqy automatically appends `.default`:

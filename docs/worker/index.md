@@ -2,6 +2,53 @@
 
 The runqy worker (`runqy-worker`) is a Go binary that processes tasks from Redis and supervises Python processes.
 
+## Prerequisites
+
+The worker requires a Python runtime to execute task code:
+
+| Requirement | Description |
+|-------------|-------------|
+| **Python 3.8+** | With the `venv` module installed |
+| **Git** | For cloning task code repositories |
+
+### Python venv module
+
+The worker creates virtual environments for task isolation. On some Linux distributions, the `venv` module is a separate package:
+
+=== "Debian/Ubuntu"
+
+    ```bash
+    sudo apt install python3-venv
+    ```
+
+=== "Fedora/RHEL"
+
+    ```bash
+    sudo dnf install python3-venv
+    ```
+
+=== "macOS/Windows"
+
+    The `venv` module is included by default with Python installations from python.org.
+
+### Alternative: Use uv (recommended)
+
+[uv](https://docs.astral.sh/uv/) is a fast Python package installer that can also create virtual environments. If installed, the worker will automatically use it instead of `python -m venv`:
+
+```bash
+# Install uv (cross-platform)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Or with pip
+pip install uv
+```
+
+**Benefits of uv:**
+
+- Much faster venv creation
+- Doesn't require the `venv` module
+- Faster dependency installation when used with `requirements.txt`
+
 ## Overview
 
 The worker:
