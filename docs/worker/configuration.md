@@ -16,6 +16,7 @@ worker:
 
 deployment:
   dir: "./deployment"
+  use_system_site_packages: true  # Set to false for isolated virtualenv
 ```
 
 ## Configuration Options
@@ -41,16 +42,59 @@ deployment:
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
 | `dir` | string | Yes | Directory for cloning task code |
+| `use_system_site_packages` | bool | No | Inherit packages from base Python environment (default: `true`). Set to `false` for isolated virtualenv |
 
 ## Environment Variables
 
-Configuration values can also be set via environment variables:
+All configuration values can be set via environment variables, which take priority over `config.yml`:
 
-| Variable | Config Path |
-|----------|-------------|
-| `RUNQY_SERVER_URL` | `server.url` |
-| `RUNQY_API_KEY` | `server.api_key` |
-| `RUNQY_QUEUE` | `worker.queue` |
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `RUNQY_SERVER_URL` | Server URL | - |
+| `RUNQY_API_KEY` | API key for authentication | - |
+| `RUNQY_QUEUES` | Queues to listen on (comma-separated) | - |
+| `RUNQY_CONCURRENCY` | Number of concurrent tasks | `1` |
+| `RUNQY_SHUTDOWN_TIMEOUT` | Graceful shutdown timeout | `30s` |
+| `RUNQY_BOOTSTRAP_RETRIES` | Number of bootstrap retry attempts | `3` |
+| `RUNQY_BOOTSTRAP_RETRY_DELAY` | Delay between bootstrap retries | `5s` |
+| `RUNQY_GIT_SSH_KEY` | Path to SSH private key for git clone | - |
+| `RUNQY_GIT_TOKEN` | Git PAT token for HTTPS clone | - |
+| `RUNQY_DEPLOYMENT_DIR` | Local deployment directory | `./deployment` |
+| `RUNQY_USE_SYSTEM_SITE_PACKAGES` | Inherit packages from base Python (`true`/`false`) | `true` |
+| `RUNQY_MAX_RETRY` | Max task retries | `3` |
+
+### Examples
+
+=== "PowerShell"
+
+    ```powershell
+    $env:RUNQY_SERVER_URL = "http://localhost:3000"
+    $env:RUNQY_API_KEY = "your-api-key"
+    $env:RUNQY_QUEUES = "inference"
+    runqy-worker
+    ```
+
+=== "Bash"
+
+    ```bash
+    export RUNQY_SERVER_URL="http://localhost:3000"
+    export RUNQY_API_KEY="your-api-key"
+    export RUNQY_QUEUES="inference"
+    runqy-worker
+    ```
+
+=== "Docker"
+
+    ```bash
+    docker run \
+      -e RUNQY_SERVER_URL=http://host.docker.internal:3000 \
+      -e RUNQY_API_KEY=your-api-key \
+      -e RUNQY_QUEUES=inference \
+      runqy-worker
+    ```
+
+!!! tip "No config.yml needed"
+    When using environment variables, you can run the worker without any `config.yml` file.
 
 ## Vault Injection
 
