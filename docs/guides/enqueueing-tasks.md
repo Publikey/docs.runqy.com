@@ -2,6 +2,16 @@
 
 runqy uses Redis for task storage. This guide shows how to enqueue tasks from various languages.
 
+## Quick Comparison
+
+| Method | Throughput | Use Case |
+|--------|------------|----------|
+| HTTP API (`POST /queue/add`) | ~800-1,000/s | Simple integrations |
+| HTTP Batch API (`POST /queue/add-batch`) | ~35,000-50,000/s | High-throughput from any language |
+| Direct Redis (pipelined) | ~40,000-80,000/s | Maximum performance |
+
+For most use cases, the **Batch API** offers the best balance of simplicity and performance.
+
 ## Redis Key Format
 
 runqy uses an asynq-compatible key format:
@@ -48,7 +58,66 @@ This works in the API, CLI, and direct Redis operations (the server normalizes t
 !!! warning "Queue must exist"
     If the resolved queue (e.g., `inference.default`) doesn't exist in the configuration, the operation fails with an error.
 
-## Examples
+## HTTP Batch API
+
+The batch endpoint is the recommended approach for high-throughput job submission. It uses Redis pipelining internally for optimal performance.
+
+### Python (using SDK)
+
+```python
+from runqy_python import RunqyClient
+
+client = RunqyClient("http://localhost:3000", api_key="your-api-key")
+
+# Submit 1000 jobs in one request
+jobs = [{"prompt": f"Generate image {i}"} for i in range(1000)]
+result = client.enqueue_batch("inference.default", jobs)
+
+print(f"Enqueued: {result.enqueued} jobs")
+```
+
+### cURL
+
+```bash
+curl -X POST http://localhost:3000/queue/add-batch \
+  -H "Authorization: Bearer your-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "queue": "inference.default",
+    "jobs": [
+      {"data": {"prompt": "Hello"}},
+      {"data": {"prompt": "World"}}
+    ]
+  }'
+```
+
+### Node.js
+
+```javascript
+const response = await fetch('http://localhost:3000/queue/add-batch', {
+  method: 'POST',
+  headers: {
+    'Authorization': 'Bearer your-api-key',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    queue: 'inference.default',
+    jobs: [
+      { data: { prompt: 'Hello' } },
+      { data: { prompt: 'World' } },
+    ],
+  }),
+});
+
+const result = await response.json();
+console.log(`Enqueued: ${result.enqueued}`);
+```
+
+---
+
+## Direct Redis Access
+
+For maximum performance or when you need direct Redis access, you can enqueue tasks directly.
 
 ### Redis CLI
 

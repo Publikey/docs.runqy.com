@@ -15,6 +15,7 @@ The `runqy-python` SDK provides simple decorators for writing task handlers that
 
 - **`RunqyClient` class**: HTTP client for enqueuing tasks
 - **`enqueue()` function**: Quick enqueue without creating a client instance
+- **`enqueue_batch()` function**: High-throughput batch enqueue (35,000+ jobs/s)
 
 ## Installation
 
@@ -67,6 +68,27 @@ print(f"Task ID: {task.task_id}")
 result = client.get_task(task.task_id)
 print(f"State: {result.state}, Result: {result.result}")
 ```
+
+## Batch Enqueue Example
+
+For high-throughput scenarios, use `enqueue_batch()` to submit thousands of jobs per second:
+
+```python
+from runqy_python import RunqyClient
+
+client = RunqyClient("http://localhost:3000", api_key="your-api-key")
+
+# Enqueue 1000 jobs in a single request
+jobs = [{"input": f"job-{i}"} for i in range(1000)]
+result = client.enqueue_batch("inference.default", jobs)
+
+print(f"Enqueued: {result.enqueued}")
+print(f"Failed: {result.failed}")
+print(f"First 5 task IDs: {result.task_ids[:5]}")
+```
+
+!!! tip "Performance"
+    Batch enqueue achieves ~35,000-50,000 jobs/s compared to ~800-1,000 jobs/s with individual `enqueue()` calls.
 
 ## Source Code
 
