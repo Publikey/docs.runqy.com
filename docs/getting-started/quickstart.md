@@ -79,8 +79,11 @@ For more installation options, see the [Installation Guide](installation.md).
 ## 1. Start Redis
 
 ```bash
-docker run -d --name redis -p 6379:6379 redis:alpine
+docker run -d --name redis -p 6379:6379 redis:7-alpine
 ```
+
+!!! warning "Redis 8.x is not supported"
+    runqy uses [asynq](https://github.com/hibiken/asynq) which relies on Lua scripts that are incompatible with Redis 8.x. Use **Redis 7.x** (`redis:7-alpine`). The Docker Compose files already pin this version.
 
 ## 2. Start the Server
 
@@ -131,6 +134,9 @@ docker run -d --name redis -p 6379:6379 redis:alpine
         ```
 
 The server starts on port 3000 by default.
+
+!!! info "API Authentication"
+    The server reads the API key from the `RUNQY_API_KEY` environment variable. HTTP clients (curl, SDKs) must send it as an `Authorization: Bearer {key}` header.
 
 ## 3. Deploy the Example Queues
 
@@ -183,6 +189,9 @@ This deploys two example queues:
 |-------|------|-------------|
 | `quickstart-oneshot` | one_shot | Spawns a new Python process per task |
 | `quickstart-longrunning` | long_running | Keeps Python process alive between tasks |
+
+!!! note "Sub-queue naming: the `.default` suffix"
+    When a queue has no explicit sub-queues defined, runqy automatically appends `.default`. So `quickstart-oneshot` becomes `quickstart-oneshot.default` at runtime. You'll see this suffix in worker logs, Redis keys, and API responses. When enqueueing, you can use either the short name (`quickstart-oneshot`) or the full name (`quickstart-oneshot.default`).
 
 ## 4. Start a Worker
 
@@ -294,6 +303,21 @@ Response:
 
 !!! note "Queue name shorthand"
     You can omit the `.default` suffix when enqueueing. For example, `quickstart-oneshot` automatically resolves to `quickstart-oneshot.default`.
+
+??? info "Request format: nested vs flat"
+    The `/queue/add` endpoint accepts two formats:
+
+    **Nested format** (wraps payload in `"data"`):
+    ```json
+    {"queue": "myqueue", "timeout": 60, "data": {"operation": "uppercase", "data": "hello"}}
+    ```
+
+    **Flat format** (all extra fields become the payload):
+    ```json
+    {"queue": "myqueue", "timeout": 60, "operation": "uppercase", "data": "hello"}
+    ```
+
+    Both are equivalent. In the nested format, the `"data"` wrapper contains your task payload as-is. Note that in the quickstart example, the inner `"data"` key is a task input field (not the wrapper) — this is valid but can look confusing at first glance.
 
 ### Try Long-Running Mode
 
