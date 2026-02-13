@@ -36,6 +36,33 @@ theme:
 plugins:
   - search
   - tags
+  - llms-txt:
+      sections:
+        Getting Started:
+          - getting-started/index.md: "Introduction to runqy"
+          - getting-started/installation.md: "Installation methods (CLI, Docker, source)"
+          - getting-started/quickstart.md: "Quick start guide with Docker Compose"
+          - getting-started/architecture.md: "Architecture overview and concepts"
+        Server:
+          - server/index.md: "Server overview"
+          - server/configuration.md: "Server configuration reference"
+          - server/cli.md: "CLI commands reference"
+          - server/api.md: "REST API reference (enqueue, batch, task status)"
+        Worker:
+          - worker/index.md: "Worker overview"
+          - worker/configuration.md: "Worker configuration reference"
+          - worker/deployment.md: "Deployment and bootstrap process"
+        Python SDK:
+          - python-sdk/index.md: "Python SDK overview"
+          - python-sdk/installation.md: "SDK installation"
+          - python-sdk/decorators.md: "Task decorators (@task, @load)"
+          - python-sdk/examples.md: "Code examples"
+        Guides:
+          - guides/local-development.md: "Local development setup"
+          - guides/enqueueing-tasks.md: "How to enqueue tasks"
+          - guides/result-delivery.md: "Getting task results"
+          - guides/vaults.md: "Secrets management with Vaults"
+          - guides/monitoring.md: "Monitoring and metrics"
 
 markdown_extensions:
   - pymdownx.emoji:
