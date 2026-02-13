@@ -4,7 +4,7 @@ By default, runqy workers do **not** store task results in Redis. This guide exp
 
 ## Default Behavior
 
-When a task completes, the worker only tracks success or failure status in Redis. The full result payload is **not stored** by default (`RedisStorage: false`).
+When a task completes, the worker only tracks success or failure status in Redis. The full result payload is **not stored** by default (`redis_storage: false`).
 
 **Why?** Task results can be large—videos, images, ML model outputs, generated files. Storing these in Redis would:
 
@@ -62,7 +62,7 @@ def handle(payload: dict, ctx: dict) -> dict:
             # raise
             # Option 2: Handle gracefully, log for investigation
 
-    # Return value not stored when RedisStorage=false (default)
+    # Return value not stored when redis_storage=false (default)
     # Just return to signal success
     return
 
@@ -70,8 +70,8 @@ if __name__ == "__main__":
     run()
 ```
 
-!!! note "Return Values When RedisStorage is Disabled"
-    When `RedisStorage: false` (the default), the return value is not stored anywhere.
+!!! note "Return Values When redis_storage is Disabled"
+    When `redis_storage: false` (the default), the return value is not stored anywhere.
     The worker only needs to know success vs failure, so `return` or `return None` is sufficient.
     The SDK sends `{"result": null, "error": null}` to signal success.
 
@@ -228,9 +228,9 @@ if __name__ == "__main__":
     run()
 ```
 
-## When to Enable RedisStorage
+## When to Enable redis_storage
 
-Enable `RedisStorage: true` in your worker config when:
+Enable `redis_storage: true` in your queue deployment config (server-side) when:
 
 - Results are small (< 1MB)
 - Clients need to poll synchronously for results
@@ -238,14 +238,17 @@ Enable `RedisStorage: true` in your worker config when:
 - You're building simple integrations or prototypes
 
 ```yaml
-# worker config.yml
-worker:
-  queue: "simple"
-  RedisStorage: true
+# Queue deployment YAML (server-side, e.g. runqy/deployment/simple.yml)
+queues:
+  simple:
+    deployment:
+      redis_storage: true
 ```
 
+The server transmits this setting to the worker during bootstrap registration.
+
 !!! warning "Memory Considerations"
-    With `RedisStorage: true`, results accumulate in Redis until they expire or are manually deleted. Monitor your Redis memory usage and set appropriate TTLs for result keys.
+    With `redis_storage: true`, results accumulate in Redis until they expire or are manually deleted. Monitor your Redis memory usage and set appropriate TTLs for result keys.
 
 ## Combining Patterns
 

@@ -1,19 +1,105 @@
 # Server Configuration
 
-The server is configured via a YAML file.
+The server is configured via **environment variables** and **CLI flags**. CLI flags take priority over environment variables, which take priority over defaults.
 
-## Configuration File
+## Configuration Methods
+
+### 1. Environment Variables (`.env.secret` file)
+
+Create a `.env.secret` file in the parent directory of `app/`:
+
+```bash
+# .env.secret
+RUNQY_API_KEY=your-secret-api-key
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=postgres
+DATABASE_PASSWORD=your-db-password
+DATABASE_DBNAME=sdxl_queuing_dev
+```
+
+### 2. CLI Flags
+
+```bash
+runqy serve --port 8080 --api-key my-key --redis-uri redis://:password@localhost:6379
+runqy serve --db-host pg.example.com --db-name mydb --db-user admin
+runqy serve --sqlite --sqlite-path ./data/runqy.db
+```
+
+### 3. Priority Order
+
+```
+CLI flags > Environment variables > Defaults
+```
+
+## Environment Variables Reference
+
+### Server
+
+| Variable | Default | CLI Flag | Description |
+|----------|---------|----------|-------------|
+| `PORT` | `3000` | `--port` | HTTP server port |
+| `RUNQY_API_KEY` | — | `--api-key` (global) | API key for authenticated endpoints |
+
+### Redis
+
+| Variable | Default | CLI Flag | Description |
+|----------|---------|----------|-------------|
+| `REDIS_HOST` | `localhost` | — | Redis hostname |
+| `REDIS_PORT` | `6379` | — | Redis port |
+| `REDIS_PASSWORD` | — | — | Redis password |
+| `REDIS_TLS` | `false` | `--redis-tls` | Enable TLS for Redis connection |
+| — | — | `--redis-uri` (global) | Redis URI (overrides host/port/password/tls). Format: `redis[s]://[:password@]host[:port]` |
+
+### PostgreSQL
+
+| Variable | Default | CLI Flag | Description |
+|----------|---------|----------|-------------|
+| `DATABASE_HOST` | `localhost` | `--db-host` | PostgreSQL hostname |
+| `DATABASE_PORT` | `5432` | `--db-port` | PostgreSQL port |
+| `DATABASE_USER` | `postgres` | `--db-user` | PostgreSQL username |
+| `DATABASE_PASSWORD` | — | `--db-password` | PostgreSQL password |
+| `DATABASE_DBNAME` | `sdxl_queuing_dev` | `--db-name` | PostgreSQL database name |
+| `DATABASE_SSL` | `disable` | `--db-ssl` | PostgreSQL SSL mode |
+
+### SQLite (alternative to PostgreSQL)
+
+| Variable | Default | CLI Flag | Description |
+|----------|---------|----------|-------------|
+| `SQLITE_DB_PATH` | `runqy.db` | `--sqlite-path` | SQLite database file path |
+| — | — | `--sqlite` | Use SQLite instead of PostgreSQL |
+
+### Monitoring & Security
+
+| Variable | Default | CLI Flag | Description |
+|----------|---------|----------|-------------|
+| `ASYNQ_READ_ONLY` | `false` | — | Restrict monitoring UI to read-only mode |
+| `PROMETHEUS_ADDRESS` | — | — | Prometheus server URL for time-series charts |
+| `RUNQY_JWT_SECRET` | (auto-generated) | — | JWT secret for dashboard authentication. If not set, a random secret is generated on each restart (sessions won't survive restarts) |
+| `RUNQY_VAULT_MASTER_KEY` | — | — | Base64-encoded 32-byte key for vault encryption. If not set, the vaults feature is disabled |
+
+### Additional Server Flags
+
+| Flag | Description |
+|------|-------------|
+| `--config <dir>` | Path to queue workers config directory (overrides `QUEUE_WORKERS_DIR`) |
+| `--watch` | Enable file/git watching for config auto-reload |
+| `--config-repo <url>` | GitHub repo URL for configs |
+| `--config-branch <branch>` | Git branch (default: main) |
+| `--no-ui` | Disable the monitoring web dashboard |
+| `--debug` | Enable verbose logging |
+
+## Queue Worker Definitions (YAML)
+
+!!! note "Optional"
+    YAML-based queue definitions are optional. In most cases, queues are created and managed after startup using the CLI (`runqy config create`) or the monitoring dashboard GUI.
+
+YAML files in the `deployment/` directory (or a custom directory specified with `--config`) allow you to pre-configure queues so that a fresh server starts with all queues already set up — useful for automated deployments or spinning up new environments.
 
 ```yaml
-server:
-  port: 8081
-  api_key: "your-secret-api-key"
-
-redis:
-  addr: "localhost:6379"
-  password: ""  # Optional
-  db: 0         # Optional
-
 queues:
   inference:
     priority: 6
@@ -35,26 +121,7 @@ queues:
       startup_timeout_secs: 60
 ```
 
-## Configuration Options
-
-### `server`
-
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `port` | int | Yes | HTTP port to listen on |
-| `api_key` | string | Yes | API key for worker authentication |
-
-### `redis`
-
-| Option | Type | Required | Description |
-|--------|------|----------|-------------|
-| `addr` | string | Yes | Redis server address (host:port) |
-| `password` | string | No | Redis password |
-| `db` | int | No | Redis database number (default: 0) |
-
-### `queues`
-
-Each queue is defined by its name (key) and the following options:
+### Queue Options
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
@@ -62,7 +129,7 @@ Each queue is defined by its name (key) and the following options:
 | `mode` | string | No | Execution mode: `long_running` (default) or `one_shot` |
 | `deployment` | object | Yes | Deployment configuration |
 
-### `deployment`
+### Deployment Options
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|

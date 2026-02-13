@@ -119,7 +119,7 @@ def handle(payload: dict, ctx: dict) -> dict:
             logging.error(f"Webhook delivery failed: {e}")
             # Optionally: raise to trigger retry, or handle gracefully
 
-    # No need to return data when RedisStorage=false (default)
+    # No need to return data when redis_storage=false (default)
     return
 
 if __name__ == "__main__":
