@@ -36,7 +36,7 @@ theme:
 plugins:
   - search
   - tags
-  - llms-txt:
+  - llmstxt-md:
       sections:
         Getting Started:
           - getting-started/index.md: "Introduction to runqy"
