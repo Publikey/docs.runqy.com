@@ -116,10 +116,16 @@ nav:
       - Result Delivery: guides/result-delivery.md
       - Vaults (Secrets): guides/vaults.md
       - Monitoring: guides/monitoring.md
+  - For LLMs:
+      - "llms.txt ↗": "https://docs.runqy.com/llms.txt"
+      - "llms-full.txt ↗": "https://docs.runqy.com/llms-full.txt"
 
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/Publikey
+    - icon: fontawesome/solid/robot
+      link: /llms.txt
+      name: LLMs.txt
 
 copyright: Copyright &copy; 2024-2026 Publikey
