@@ -93,6 +93,47 @@ export RUNQY_SERVER="http://localhost:3000"
 | 2 | Start worker with config pointing to server | "Worker registered" log |
 | 3 | Enqueue a task to the worker's queue | Task processed, result in Redis |
 
+### A7. Worker Recovery & Auto-Restart
+
+Requires: a running worker connected to the server, with a `long_running` queue.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Start worker with a process that runs stably | Worker registered, heartbeat active |
+| 2 | Kill the supervised process (not the worker): `kill <child_pid>` | Worker logs: "Process exited", then "Restarting process (attempt 1/5)" |
+| 3 | Wait for restart | Worker logs: "Process startup detected - service is ready" |
+| 4 | Enqueue a task | Task processed successfully (recovery reconnected stdio) |
+| 5 | Kill the supervised process 5+ times rapidly | Worker enters degraded state: "Circuit breaker open, max restarts reached" |
+| 6 | Check worker heartbeat (API `/api/workers`) | Worker shows `recovery.state: "degraded"` or `"circuit_open"` |
+| 7 | Wait for cooldown (or restart worker) | Recovery resets, worker resumes processing |
+
+### A8. Graceful Shutdown
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Enqueue a long-running task | Task is "active" |
+| 2 | Send `SIGTERM` to worker | Worker logs: "Received SIGTERM, shutting down gracefully" |
+| 3 | Worker waits for active task to finish | Task completes before worker exits |
+| 4 | Worker deregisters | Worker removed from `/api/workers` |
+| 5 | Send `SIGTERM` twice quickly | Worker force-exits on second signal |
+
+### A9. RetryableError (Python SDK)
+
+Requires: a Python worker using `runqy-python` SDK.
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Worker handler raises `RetryableError("temporary failure")` | Task retried (retry count increments) |
+| 2 | Worker handler raises regular `Exception("permanent")` | Task fails permanently (no retry) |
+| 3 | Worker handler raises `RetryableError` with max retries exhausted | Task moves to failed state |
+
+### A10. Stdout Protection (Python SDK)
+
+| # | Step | Expected |
+|---|------|----------|
+| 1 | Worker handler contains `print("debug output")` | Task still completes (print goes to stderr, not protocol) |
+| 2 | Worker handler writes to `sys.stdout` | Output redirected to stderr, protocol unaffected |
+
 ---
 
 ## Section B — API (curl)
@@ -172,6 +213,39 @@ All error endpoints must return `{"errors":[...]}` (never `{"error":"..."}`):
 | 3 | Invalid payload | 400 |
 | 4 | Missing auth | 401 |
 | 5 | Task poll timeout | 408 |
+
+### B9. Batch Enqueue
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `curl -X POST localhost:3000/queue/add-batch -d '{"tasks":[{"queue":"testqueue","data":{"i":1}},{"queue":"testqueue","data":{"i":2}}]}'` | 200, array of task IDs |
+| 2 | Same with one invalid queue | Partial success or error for invalid entry |
+| 3 | Empty tasks array | 400, `{"errors":[...]}` |
+
+### B10. Auth on Previously Public Routes
+
+These routes were public before `bulletproof` and now require authentication:
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `curl localhost:3000/queue/<task_uuid>` (no auth) | 401 `{"errors":["access unauthorized"]}` |
+| 2 | `curl localhost:3000/workers/config/<queue_name>` (no auth) | 401 `{"errors":["access unauthorized"]}` |
+| 3 | Same with `-H "X-API-Key: $RUNQY_API_KEY"` | 200, expected response |
+
+### B11. Body Size Limit
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `curl -X POST localhost:3000/queue/add -d '<payload > 50MB>'` | 413 or connection reset |
+| 2 | Normal-sized payload after large one | 200, server still healthy |
+
+### B12. Input Validation (API)
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `POST /queue/add` with queue name containing special chars `{"queue":"test;drop"}` | 400, invalid queue name |
+| 2 | `POST /api/vaults` with reserved key name `{"name":"PATH"}` | 400, reserved name |
+| 3 | `POST /api/vaults/v/entries` with empty key `{"key":"","value":"x"}` | 400 |
 
 ---
 
