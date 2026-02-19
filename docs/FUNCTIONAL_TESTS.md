@@ -97,81 +97,147 @@ export RUNQY_SERVER="http://localhost:3000"
 
 ## Section B — API (curl)
 
-All authenticated endpoints require: `-H "X-API-Key: $RUNQY_API_KEY"`
+Runqy exposes **two separate APIs** with different auth mechanisms:
+
+1. **Main API** (`/queue/*`, `/worker/*`, `/workers/*`, `/api/vaults/*`) — auth via `X-API-Key` header
+2. **Monitoring API** (`/monitoring/api/*`) — auth via cookie JWT (setup + login flow)
+
+### B0. Monitoring Auth Setup
+
+Before testing monitoring endpoints, set up authentication:
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `curl localhost:3000/monitoring/api/auth/status` | `{"authenticated":false,"setup_required":true}` |
+| 2 | `curl -X POST localhost:3000/monitoring/api/auth/setup -H 'Content-Type: application/json' -d '{"email":"admin@test.com","password":"password123","confirm_password":"password123"}'` | 200, admin created |
+| 3 | `curl -c cookies.txt -X POST localhost:3000/monitoring/api/auth/login -H 'Content-Type: application/json' -d '{"email":"admin@test.com","password":"password123"}'` | 200, `Set-Cookie: runqy_auth=...` |
+
+!!! note "Auth types"
+    Main API examples below use `-H "X-API-Key: $RUNQY_API_KEY"`.
+    Monitoring API examples use `-b cookies.txt` (cookie from B0 login).
 
 ### B1. Health & System
 
 | # | Command | Expected |
 |---|---------|----------|
 | 1 | `curl localhost:3000/health` | 200 OK |
-| 2 | `curl localhost:3000/api/redis_info` | 200, JSON with `"connected": true` |
-| 3 | `curl localhost:3000/api/database_info` | 200, JSON with connection info |
+| 2 | `curl -b cookies.txt localhost:3000/monitoring/api/redis_info` | 200, JSON with Redis version, uptime, clients |
+| 3 | `curl -b cookies.txt localhost:3000/monitoring/api/database_info` | 200, JSON with connection info |
 
-### B2. Queue Endpoints
-
-| # | Command | Expected |
-|---|---------|----------|
-| 1 | `curl localhost:3000/api/queues` | 200, JSON object `{"queues":[...]}` |
-| 2 | `curl localhost:3000/api/queues/testqueue.default` | 200, queue details |
-| 3 | `curl -X POST localhost:3000/api/queues/testqueue.default:pause` | 200 |
-| 4 | `curl -X POST localhost:3000/api/queues/testqueue.default:resume` | 200 |
-
-### B3. Queue Config Endpoints
+### B2. Queue Endpoints (Monitoring API)
 
 | # | Command | Expected |
 |---|---------|----------|
-| 1 | `curl localhost:3000/api/queue_configs` | 200, list of configs |
-| 2 | `curl localhost:3000/api/queue_configs/testqueue` | 200, config details |
-| 3 | `curl -X POST localhost:3000/api/queue_configs -d '{"name":"apitest","mode":"one_shot","startup_cmd":"python main.py"}'` | 201/200 |
-| 4 | `curl -X PUT localhost:3000/api/queue_configs/apitest -d '{"mode":"long_running","startup_cmd":"python main.py"}'` | 200 |
-| 5 | `curl -X DELETE localhost:3000/api/queue_configs/apitest` | 200 |
+| 1 | `curl -b cookies.txt localhost:3000/monitoring/api/queues` | 200, JSON object `{"queues":[...]}` |
+| 2 | `curl -b cookies.txt localhost:3000/monitoring/api/queues/testqueue.default` | 200, queue details |
+| 3 | `curl -X POST -b cookies.txt localhost:3000/monitoring/api/queues/testqueue.default:pause` | 204 No Content |
+| 4 | `curl -X POST -b cookies.txt localhost:3000/monitoring/api/queues/testqueue.default:resume` | 204 No Content |
+
+### B3. Queue Config Endpoints (Monitoring API)
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `curl -b cookies.txt localhost:3000/monitoring/api/queue_configs` | 200, list of configs |
+| 2 | `curl -b cookies.txt localhost:3000/monitoring/api/queue_configs/testqueue` | 200, config details |
+| 3 | `curl -X POST -b cookies.txt localhost:3000/monitoring/api/queue_configs -H 'Content-Type: application/json' -d '{"name":"apitest","mode":"one_shot","startup_cmd":"python main.py","priority":1}'` | 201 |
+| 4 | `curl -X DELETE -b cookies.txt localhost:3000/monitoring/api/queue_configs/apitest` | 200 |
+
+!!! note "Required fields"
+    Queue config create requires `priority` (minimum 1).
 
 ### B4. Task Endpoints
 
 | # | Command | Expected |
 |---|---------|----------|
-| 1 | `curl -X POST localhost:3000/queue/add -d '{"queue":"testqueue","data":{"msg":"curl-test"}}'` | 200, returns task_id |
-| 2 | `curl localhost:3000/api/queues/testqueue.default/pending_tasks` | 200, task list |
-| 3 | `curl -X DELETE localhost:3000/api/queues/testqueue.default/pending_tasks/<task_id>` | 200 |
+| 1 | `curl -X POST -H "X-API-Key: $RUNQY_API_KEY" -H 'Content-Type: application/json' localhost:3000/queue/add -d '{"queue":"testqueue","data":{"msg":"curl-test"}}'` | 200, returns `{"info":{"id":"..."},...,"data":{...}}` |
+| 2 | `curl -b cookies.txt localhost:3000/monitoring/api/queues/testqueue.default/pending_tasks` | 200, task list |
+| 3 | `curl -X DELETE -b cookies.txt localhost:3000/monitoring/api/queues/testqueue.default/pending_tasks/<task_id>` | 200 |
+
+!!! note "Task enqueue response"
+    The task ID is at `info.id` in the response JSON (not a top-level `task_id` field).
 
 ### B5. Worker Endpoints
 
 | # | Command | Expected |
 |---|---------|----------|
-| 1 | `curl localhost:3000/api/workers` | 200, JSON array |
-| 2 | `curl localhost:3000/api/servers` | 200, JSON array |
+| 1 | `curl -H "X-API-Key: $RUNQY_API_KEY" localhost:3000/api/workers` | 200, JSON array |
+| 2 | `curl -H "X-API-Key: $RUNQY_API_KEY" localhost:3000/api/servers` | 200, JSON array |
+| 3 | `curl -b cookies.txt localhost:3000/monitoring/api/servers` | 200, JSON array (same data via monitoring route) |
 
-### B6. Vault Endpoints
+### B6. Vault Endpoints (Main API)
 
 | # | Command | Expected |
 |---|---------|----------|
-| 1 | `curl localhost:3000/api/vaults` | 200, list |
-| 2 | `curl -X POST localhost:3000/api/vaults -d '{"name":"apivault","description":"test"}'` | 200/201 |
-| 3 | `curl localhost:3000/api/vaults/apivault` | 200, vault details |
-| 4 | `curl -X POST localhost:3000/api/vaults/apivault/entries -d '{"key":"secret","value":"val123","is_secret":true}'` | 200 |
-| 5 | `curl -X DELETE localhost:3000/api/vaults/apivault/entries/secret` | 200 |
-| 6 | `curl -X DELETE localhost:3000/api/vaults/apivault` | 200 |
+| 1 | `curl -H "X-API-Key: $RUNQY_API_KEY" localhost:3000/api/vaults` | 200, list |
+| 2 | `curl -X POST -H "X-API-Key: $RUNQY_API_KEY" -H 'Content-Type: application/json' localhost:3000/api/vaults -d '{"name":"apivault","description":"test"}'` | 201 |
+| 3 | `curl -H "X-API-Key: $RUNQY_API_KEY" localhost:3000/api/vaults/apivault` | 200, vault details |
+| 4 | `curl -X POST -H "X-API-Key: $RUNQY_API_KEY" -H 'Content-Type: application/json' localhost:3000/api/vaults/apivault/entries -d '{"key":"secret","value":"val123","is_secret":true}'` | 200 |
+| 5 | `curl -X DELETE -H "X-API-Key: $RUNQY_API_KEY" localhost:3000/api/vaults/apivault/entries/secret` | 200 |
+| 6 | `curl -X DELETE -H "X-API-Key: $RUNQY_API_KEY" localhost:3000/api/vaults/apivault` | 200 |
 
 ### B7. Error Format Consistency
 
-All error endpoints must return `{"errors":[...]}` (never `{"error":"..."}`):
+Main API (`/queue/*`, `/api/vaults/*`) returns errors in array format:
 
 | # | Command | Expected |
 |---|---------|----------|
-| 1 | `curl localhost:3000/api/queues/nonexistent` | `{"errors":[...]}` |
-| 2 | `curl localhost:3000/api/vaults/nonexistent` | `{"errors":[...]}` |
-| 3 | `curl -X POST localhost:3000/queue/add -d '{}'` | `{"errors":[...]}` |
-| 4 | Request without auth header on protected endpoint | `{"errors":[...]}` |
+| 1 | `curl -H "X-API-Key: ..." localhost:3000/api/vaults/nonexistent` | 404, `{"errors":["vault not found"]}` |
+| 2 | `curl -X POST -H "X-API-Key: ..." localhost:3000/queue/add -d '{}'` | 400, `{"errors":["queue is required"]}` |
+| 3 | Request without auth header on protected endpoint | 401, `{"errors":["access unauthorized"]}` |
+
+!!! warning "Known inconsistency"
+    Monitoring API (`/monitoring/api/*`) returns `{"error":"..."}` (singular string) instead of `{"errors":[...]}` (array). The monitoring handler was not yet migrated to the bulletproof error format.
 
 ### B8. Status Codes
 
 | # | Scenario | Expected Code |
 |---|----------|--------------|
-| 1 | Queue not found | 404 |
-| 2 | Vault not found | 404 |
+| 1 | Queue not found (monitoring API) | 404 |
+| 2 | Vault not found (main API) | 404 |
 | 3 | Invalid payload | 400 |
-| 4 | Missing auth | 401 |
-| 5 | Task poll timeout | 408 |
+| 4 | Missing auth (main API) | 401 |
+| 5 | Missing auth (monitoring API) | 401 "Unauthorized" |
+
+!!! note "Task poll"
+    `GET /queue/<uuid>` is a **long-poll** endpoint — it blocks until the task completes or the connection drops. There is no 408 timeout response; the client controls the timeout.
+
+### B9. Batch Enqueue
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `curl -X POST -H "X-API-Key: ..." -H 'Content-Type: application/json' localhost:3000/queue/add-batch -d '{"queue":"testqueue","jobs":[{"data":{"i":1}},{"data":{"i":2}}]}'` | 200, `{"enqueued":2,"failed":0,"task_ids":[...]}` |
+| 2 | Empty jobs: `-d '{"queue":"testqueue","jobs":[]}'` | 400 |
+| 3 | Missing fields: `-d '{}'` | 400, validation error |
+
+!!! note "Batch format"
+    Batch enqueue uses `{"queue":"...", "jobs":[...]}` — a single queue name with an array of job objects. Each job contains `data` and optional fields. This is **not** `{"tasks":[{"queue":...}]}`.
+
+### B10. Auth on Previously Public Routes
+
+These routes were public before `bulletproof` and now require API key authentication:
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `curl localhost:3000/queue/<task_uuid>` (no auth) | 401, `{"errors":["access unauthorized"]}` |
+| 2 | `curl localhost:3000/workers/config/<queue_name>` (no auth) | 401, `{"errors":["access unauthorized"]}` |
+| 3 | Same with `-H "X-API-Key: $RUNQY_API_KEY"` | 200, expected response |
+
+!!! note "Long-poll caveat"
+    `GET /queue/<uuid>` with auth is a long-poll endpoint. It will block until the task is processed by a worker. Use `--max-time` with curl to avoid indefinite hangs.
+
+### B11. Body Size Limit
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `curl -X POST localhost:3000/queue/add -d '<payload > 50MB>'` | 413 or connection reset |
+| 2 | Normal-sized payload after large one | 200, server still healthy |
+
+### B12. Input Validation (API)
+
+| # | Command | Expected |
+|---|---------|----------|
+| 1 | `POST /queue/add` with special chars in queue name `{"queue":"test;drop"}` | Returns "queue not found" (no queue name char validation — the name passes through but the config doesn't exist) |
+| 2 | `POST /api/vaults/v/entries` with empty key `{"key":"","value":"x"}` | 400, validation error |
 
 ---
 
