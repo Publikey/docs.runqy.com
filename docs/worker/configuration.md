@@ -17,6 +17,11 @@ worker:
 deployment:
   dir: "./deployment"
   use_system_site_packages: true  # Set to false for isolated virtualenv
+
+recovery:
+  enabled: true        # Auto-restart crashed Python processes (default: true)
+  max_restarts: 5      # Circuit breaker threshold (default: 5)
+  cooldown_period: 10m # Stable run time to reset counter (default: 10m)
 ```
 
 ## Configuration Options
@@ -43,6 +48,35 @@ deployment:
 | `dir` | string | Yes | Directory for cloning task code |
 | `use_system_site_packages` | bool | No | Inherit packages from base Python environment (default: `true`). Set to `false` for isolated virtualenv |
 
+### `recovery`
+
+Controls auto-recovery when a supervised Python process crashes. Enabled by default.
+
+| Option | Type | Required | Description |
+|--------|------|----------|-------------|
+| `enabled` | bool | No | Enable auto-recovery (default: `true`) |
+| `max_restarts` | int | No | Max consecutive restarts before entering degraded state (default: `5`) |
+| `initial_delay` | duration | No | Delay before the first restart attempt (default: `1s`) |
+| `max_delay` | duration | No | Maximum delay between restart attempts (default: `5m`) |
+| `backoff_factor` | float | No | Multiplier for exponential backoff between restarts (default: `2.0`) |
+| `cooldown_period` | duration | No | Time without crash to reset the failure counter (default: `10m`) |
+
+```yaml
+recovery:
+  enabled: true
+  max_restarts: 5
+  initial_delay: "1s"
+  max_delay: "5m"
+  backoff_factor: 2.0
+  cooldown_period: "10m"
+```
+
+!!! info "How auto-recovery works"
+    When a Python process crashes, the worker automatically restarts it with exponential backoff.
+    If the process keeps crashing (reaching `max_restarts` without a stable run), the worker enters
+    **degraded state** and stops retrying — manual restart is required. If the process runs
+    successfully for `cooldown_period`, the failure counter resets to zero.
+
 ## Environment Variables
 
 All configuration values can be set via environment variables, which take priority over `config.yml`:
@@ -61,6 +95,11 @@ All configuration values can be set via environment variables, which take priori
 | `RUNQY_DEPLOYMENT_DIR` | Local deployment directory | `./deployment` |
 | `RUNQY_USE_SYSTEM_SITE_PACKAGES` | Inherit packages from base Python (`true`/`false`) | `true` |
 | `RUNQY_MAX_RETRY` | Max task retries | `3` |
+| `RUNQY_RECOVERY_ENABLED` | Enable process auto-recovery (`true`/`false`) | `true` |
+| `RUNQY_RECOVERY_MAX_RESTARTS` | Max consecutive restarts before degraded state | `5` |
+| `RUNQY_RECOVERY_INITIAL_DELAY` | Initial delay before restart attempt | `1s` |
+| `RUNQY_RECOVERY_MAX_DELAY` | Maximum backoff delay between restarts | `5m` |
+| `RUNQY_RECOVERY_COOLDOWN` | Stable run time to reset failure counter | `10m` |
 
 ### Examples
 
@@ -124,3 +163,14 @@ Each worker instance:
 - Has a concurrency of 1 for the Python process (though the worker can manage queue operations concurrently)
 
 To scale, run multiple worker instances.
+
+## Degraded State
+
+If the supervised Python process crashes repeatedly and exceeds `max_restarts` without a stable run:
+
+1. Worker enters **degraded state** — no more restart attempts
+2. Heartbeat reports `healthy: false` with recovery state `degraded`
+3. Tasks are returned to queue for retry (but will keep failing on this worker)
+4. **Manual restart of the worker is required** to recover
+
+To disable auto-recovery entirely and revert to the old behavior (immediate degraded state on first crash), set `recovery.enabled: false`.
