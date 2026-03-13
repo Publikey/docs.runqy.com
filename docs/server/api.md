@@ -98,6 +98,18 @@ Enqueue a new task.
 }
 ```
 
+| Field | Type | Required | Default | Description |
+|-------|------|----------|---------|-------------|
+| `queue` | string | Yes | — | Target queue name |
+| `timeout` | int | No | `0` | Task timeout in seconds |
+| `data` | object | No | — | Task payload |
+| `depends_on` | []string | No | `null` | Parent task UUIDs that must complete first |
+| `on_parent_failure` | string | No | `"fail"` | `"fail"` to cascade-fail, `"ignore"` to proceed anyway |
+| `inject_parent_results` | bool | No | `false` | Inject parent results into child payload under `_parent_results` |
+
+!!! note "Task Dependencies"
+    When `depends_on` is specified, the task enters a **waiting** state and is only enqueued once all parent tasks complete. See the [Task Dependencies guide](../guides/task-dependencies.md) for full details, workflow patterns, and examples.
+
 **Response:**
 
 ```json
@@ -112,7 +124,7 @@ Enqueue a new task.
 
 ### `POST /queue/add-batch`
 
-Enqueue multiple tasks in a single request. Uses Redis pipelining for high-throughput job submission.
+Enqueue multiple tasks in a single request. Uses Redis pipelining for high-throughput job submission. Supports dependency declarations between jobs in the same batch using `_ref` / `depends_on_ref`.
 
 **Request Body:**
 
@@ -127,6 +139,22 @@ Enqueue multiple tasks in a single request. Uses Redis pipelining for high-throu
   ]
 }
 ```
+
+**Batch with dependencies (workflow submission):**
+
+```json
+{
+  "queue": "etl-pipeline",
+  "jobs": [
+    {"_ref": "extract", "data": {"source": "s3://raw"}},
+    {"_ref": "transform", "depends_on_ref": ["extract"], "data": {"format": "parquet"}},
+    {"_ref": "load", "depends_on_ref": ["transform"], "data": {"dest": "warehouse"}}
+  ]
+}
+```
+
+!!! tip "Batch Refs"
+    Use `_ref` to assign a local name to a job, and `depends_on_ref` to reference other jobs in the same batch. Runqy resolves refs to real UUIDs before storing dependencies. See the [Task Dependencies guide](../guides/task-dependencies.md) for details.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
