@@ -48,15 +48,14 @@ Registers a worker and returns configuration including Redis credentials and dep
   },
   "queue": {
     "name": "inference",
-    "priority": 6,
-    "mode": "long_running"
+    "priority": 6
   },
   "deployment": {
     "git_url": "https://github.com/example/repo.git",
     "branch": "main",
     "startup_cmd": "python main.py",
     "startup_timeout_secs": 300,
-    "requirements_file": "requirements.txt",
+    "mode": "long_running",
     "vaults": ["api-keys"]
   },
   "vaults": {
@@ -98,6 +97,12 @@ Enqueue a new task.
 }
 ```
 
+!!! info "`timeout` sets the execution (active) timeout"
+    When provided, `timeout` (seconds) is the maximum time the task may **run**; exceeding it fails
+    the task and retries it (up to `max_retry`). It overrides the queue's `active_timeout`. Omit it
+    to use the queue default. All other lifecycle values (TTL, retries, pending timeout) come from
+    the queue config — see [Task Lifecycle](../guides/task-lifecycle.md).
+
 **Response:**
 
 ```json
@@ -123,7 +128,7 @@ Enqueue multiple tasks in a single request. Uses Redis pipelining for high-throu
   "jobs": [
     {"data": {"prompt": "Hello"}},
     {"data": {"prompt": "World"}},
-    {"data": {"prompt": "Foo"}, "timeout": 600}
+    {"data": {"prompt": "Foo"}}
   ]
 }
 ```
@@ -131,10 +136,14 @@ Enqueue multiple tasks in a single request. Uses Redis pipelining for high-throu
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `queue` | string | Yes | Target queue name |
-| `timeout` | int | No | Default timeout for all jobs (seconds) |
+| `timeout` | int | No | Execution (active) timeout applied to every job, in seconds. Overrides the queue's `active_timeout`. Omit to use the queue default |
 | `jobs` | array | Yes | Array of job objects |
 | `jobs[].data` | object | Yes | Task payload |
-| `jobs[].timeout` | int | No | Override timeout for this job |
+
+!!! note "Lifecycle limits come from the queue"
+    TTL, retries, and pending timeout are taken from the target queue's configuration; only the
+    execution (`active`) timeout can be overridden per request via `timeout`. See
+    [Task Lifecycle](../guides/task-lifecycle.md).
 
 **Response:**
 

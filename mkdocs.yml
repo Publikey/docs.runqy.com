@@ -60,6 +60,7 @@ plugins:
         Guides:
           - guides/local-development.md: "Local development setup"
           - guides/enqueueing-tasks.md: "How to enqueue tasks"
+          - guides/task-lifecycle.md: "Task TTL, timeouts, and retries (server-dictated, per-queue overrides)"
           - guides/result-delivery.md: "Getting task results"
           - guides/vaults.md: "Secrets management with Vaults"
           - guides/monitoring.md: "Monitoring and metrics"
@@ -113,6 +114,7 @@ nav:
   - Guides:
       - Local Development: guides/local-development.md
       - Enqueueing Tasks: guides/enqueueing-tasks.md
+      - Task Lifecycle (TTL, Timeouts, Retries): guides/task-lifecycle.md
       - Result Delivery: guides/result-delivery.md
       - Vaults (Secrets): guides/vaults.md
       - Monitoring: guides/monitoring.md
