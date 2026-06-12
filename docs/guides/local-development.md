@@ -117,20 +117,23 @@ echo '{"task_id":"t1","payload":{"foo":"bar"}}' | python python/hello_world/dumm
 ```bash
 redis-cli
 
-HSET asynq:t:test-1 type task payload '{"msg":"hello"}' retry 0 max_retry 2 queue inference.default
-LPUSH asynq:inference.default:pending test-1
+HSET asynq:{inference.default}:t:test-1 type task payload '{"msg":"hello"}' retry 0 max_retry 2 queue inference.default
+LPUSH asynq:{inference.default}:pending test-1
 ```
 
 ### Check Results
 
 ```bash
-redis-cli GET asynq:result:test-1
+# The result is stored in the `result` field of the task hash
+redis-cli HGET asynq:{inference.default}:t:test-1 result
 ```
 
 ### Monitor Worker Health
 
 ```bash
-redis-cli HGETALL "asynq:workers:*"
+# List worker heartbeat keys, then inspect one
+redis-cli KEYS "asynq:workers:*"
+redis-cli HGETALL asynq:workers:worker-abc123
 ```
 
 ## Debugging

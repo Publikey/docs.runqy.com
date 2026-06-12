@@ -92,6 +92,20 @@ CLI flags > Environment variables > Defaults
 | `--no-ui` | Disable the monitoring web dashboard |
 | `--debug` | Enable verbose logging |
 
+### Task Lifecycle Defaults
+
+Global defaults for task TTL, timeouts, and retries. Each queue can override these via its
+`deployment.limits` block (see [Task Lifecycle Limits](#task-lifecycle-limits)). Invalid values
+cause the server to refuse to start.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RUNQY_DEFAULT_MAX_RETRY` | `3` | Retries before a task is archived |
+| `RUNQY_DEFAULT_TTL_COMPLETED` | `24h` | TTL of successful tasks (`0` = no expiry) |
+| `RUNQY_DEFAULT_TTL_ARCHIVED` | `72h` | TTL of failed/archived tasks (`0` = no expiry) |
+| `RUNQY_DEFAULT_PENDING_TIMEOUT` | `0` | Max age in pending before archival (`0` = disabled) |
+| `RUNQY_DEFAULT_ACTIVE_TIMEOUT` | `0` | Max execution time before a retriable timeout (`0` = disabled) |
+
 ## Queue Worker Definitions (YAML)
 
 !!! note "Optional"
@@ -103,22 +117,21 @@ YAML files in the `deployment/` directory (or a custom directory specified with 
 queues:
   inference:
     priority: 6
-    mode: long_running  # or one_shot
     deployment:
       git_url: "https://github.com/example/repo.git"
       branch: "main"
       startup_cmd: "python main.py"
       startup_timeout_secs: 300
-      requirements_file: "requirements.txt"  # Optional
+      mode: long_running  # or one_shot
 
   simple:
     priority: 3
-    mode: one_shot
     deployment:
       git_url: "https://github.com/example/simple-tasks.git"
       branch: "main"
       startup_cmd: "python task.py"
       startup_timeout_secs: 60
+      mode: one_shot
 ```
 
 ### Queue Options
@@ -126,7 +139,6 @@ queues:
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
 | `priority` | int | Yes | Queue priority (higher = more important) |
-| `mode` | string | No | Execution mode: `long_running` (default) or `one_shot` |
 | `deployment` | object | Yes | Deployment configuration |
 
 ### Deployment Options
@@ -135,13 +147,57 @@ queues:
 |--------|------|----------|-------------|
 | `git_url` | string | Yes | Git repository URL for task code |
 | `branch` | string | Yes | Git branch to clone |
+| `mode` | string | No | Execution mode: `long_running` (default) or `one_shot` |
 | `code_path` | string | No | Path of the task code within the repository (e.g., `simple-task`)  |
 | `startup_cmd` | string | Yes | Command to start the Python process |
 | `startup_timeout_secs` | int | Yes | Timeout for process startup |
-| `requirements_file` | string | No | Path to requirements.txt (default: `requirements.txt`) |
 | `vaults` | list | No | List of vault names to inject as environment variables |
 | `redis_storage` | bool | No | If `true`, task results are written to Redis. If `false`, results are not stored in Redis and must be managed by the task itself (e.g., via webhook). Default: `false` |
 | `git_token` | string | No | Path to your github PAT's. Use the following format `vault://{VAULT-NAME}/{KEY}` (e.g., `vault://github_pats/SIMPLE_TASK`) |
+| `limits` | object | No | Per-queue task lifecycle overrides (TTL, timeouts, retries). See [Task Lifecycle Limits](#task-lifecycle-limits) |
+
+!!! note "Dependencies are auto-detected"
+    The worker installs Python dependencies automatically from a `requirements.txt` (pip) or a
+    `pyproject.toml` (poetry) at the repository root — there is no `requirements_file` option.
+
+### Task Lifecycle Limits
+
+The `limits` block under `deployment` overrides the server's global TTL/timeout/retry defaults for
+this queue. Overrides apply at the **parent-queue** level; sub-queues inherit them.
+
+```yaml
+queues:
+  inference:
+    priority: 6
+    deployment:
+      git_url: "https://github.com/example/repo.git"
+      branch: "main"
+      startup_cmd: "python main.py"
+      startup_timeout_secs: 300
+      limits:
+        max_retry: 1
+        ttl_completed: "1h"      # keep successful results 1h
+        ttl_archived: "24h"      # keep failures 24h (debugging)
+        pending_timeout: "5m"    # discard tasks not picked up within 5m
+        active_timeout: "30s"    # kill + retry tasks running longer than 30s
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `max_retry` | int | `3` | Retries before archival (`0` = no retries) |
+| `ttl_completed` | duration | `24h` | TTL of successful tasks (`0` = no expiry) |
+| `ttl_archived` | duration | `72h` | TTL of failed/archived tasks (`0` = no expiry) |
+| `pending_timeout` | duration | `0` | Max age in pending → archived without running (`0` = disabled) |
+| `active_timeout` | duration | `0` | Max execution time → retriable failure (`0` = disabled) |
+
+The server-global defaults are set via environment variables (`RUNQY_DEFAULT_MAX_RETRY`,
+`RUNQY_DEFAULT_TTL_COMPLETED`, `RUNQY_DEFAULT_TTL_ARCHIVED`, `RUNQY_DEFAULT_PENDING_TIMEOUT`,
+`RUNQY_DEFAULT_ACTIVE_TIMEOUT`). Invalid values are rejected at load/startup, not ignored.
+
+!!! tip "Full reference"
+    See the [Task Lifecycle guide](../guides/task-lifecycle.md) for how resolution works, behavior
+    details (retriable active timeout, direct-archive pending timeout), validation, and upgrade
+    compatibility.
 
 ## Sub-Queues
 

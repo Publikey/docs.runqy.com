@@ -40,6 +40,17 @@ recovery:
 | `queue` | string | Yes | Queue name to process tasks from |
 | `concurrency` | int | No | Number of concurrent task processors (default: 1) |
 | `shutdown_timeout` | duration | No | Graceful shutdown timeout (default: 30s) |
+| `ttl_completed` | duration | No | **Fallback** TTL for successful tasks (default: `24h`; alias: `completed_task_ttl`) |
+| `ttl_archived` | duration | No | **Fallback** TTL for failed/archived tasks (default: `72h`) |
+| `pending_timeout` | duration | No | **Fallback** max age in pending before archive (default: `0` = disabled) |
+| `active_timeout` | duration | No | **Fallback** max execution time before retriable timeout (default: `0` = disabled) |
+
+!!! info "These are fallbacks only"
+    Tasks enqueued through the server already carry their TTL/timeout/retry values (resolved from
+    the queue's `deployment.limits`). These worker settings apply **only** to tasks that lack those
+    fields — e.g. tasks enqueued directly into Redis, or created before an upgrade. See the
+    [Task Lifecycle guide](../guides/task-lifecycle.md). Invalid durations are rejected and the
+    worker refuses to start.
 
 ### `deployment`
 
@@ -88,6 +99,10 @@ All configuration values can be set via environment variables, which take priori
 | `RUNQY_QUEUES` | Queues to listen on (comma-separated) | - |
 | `RUNQY_CONCURRENCY` | Number of concurrent tasks | `1` |
 | `RUNQY_SHUTDOWN_TIMEOUT` | Graceful shutdown timeout | `30s` |
+| `RUNQY_TTL_COMPLETED` | Fallback TTL for successful tasks, `0` = no expiry (alias: `RUNQY_COMPLETED_TASK_TTL`) | `24h` |
+| `RUNQY_TTL_ARCHIVED` | Fallback TTL for failed/archived tasks (`0` = no expiry) | `72h` |
+| `RUNQY_PENDING_TIMEOUT` | Fallback max age in pending before archive (`0` = disabled) | `0` |
+| `RUNQY_ACTIVE_TIMEOUT` | Fallback max execution time before retriable timeout (`0` = disabled) | `0` |
 | `RUNQY_BOOTSTRAP_RETRIES` | Number of bootstrap retry attempts | `3` |
 | `RUNQY_BOOTSTRAP_RETRY_DELAY` | Delay between bootstrap retries | `5s` |
 | `RUNQY_GIT_SSH_KEY` | Path to SSH private key for git clone | - |

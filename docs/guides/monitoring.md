@@ -88,21 +88,21 @@ When `healthy: false`:
 ### Pending Tasks
 
 ```bash
-# Count pending tasks
-redis-cli LLEN asynq:inference.default:pending
+# Count pending tasks ({inference.default} braces are literal hash tags)
+redis-cli LLEN asynq:{inference.default}:pending
 
 # List pending task IDs
-redis-cli LRANGE asynq:inference.default:pending 0 -1
+redis-cli LRANGE asynq:{inference.default}:pending 0 -1
 ```
 
 ### Active Tasks
 
 ```bash
 # Count active tasks
-redis-cli LLEN asynq:inference.default:active
+redis-cli LLEN asynq:{inference.default}:active
 
 # List active task IDs
-redis-cli LRANGE asynq:inference.default:active 0 -1
+redis-cli LRANGE asynq:{inference.default}:active 0 -1
 ```
 
 ## Task Inspection
@@ -110,13 +110,15 @@ redis-cli LRANGE asynq:inference.default:active 0 -1
 ### View Task Data
 
 ```bash
-redis-cli HGETALL asynq:t:task-id-here
+redis-cli HGETALL asynq:{inference.default}:t:task-id-here
 ```
 
 ### View Task Result
 
+The result is stored in the `result` field of the task hash (there is no separate result key):
+
 ```bash
-redis-cli GET asynq:result:task-id-here
+redis-cli HGET asynq:{inference.default}:t:task-id-here result
 ```
 
 ---

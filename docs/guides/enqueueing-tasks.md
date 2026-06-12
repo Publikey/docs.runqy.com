@@ -14,12 +14,14 @@ For most use cases, the **Batch API** offers the best balance of simplicity and 
 
 ## Redis Key Format
 
-runqy uses an asynq-compatible key format:
+runqy uses an asynq-compatible key format. The `{...}` braces around a queue name are **literal**
+(Redis Cluster hash tags):
 
 | Key | Type | Description |
 |-----|------|-------------|
-| `asynq:t:{task_id}` | Hash | Task data |
+| `asynq:{queue}:t:{task_id}` | Hash | Task data — also holds the `result`, `state`, and `error_msg` fields |
 | `asynq:{queue}:pending` | List | Pending task IDs |
+| `asynq:t:{task_id}` | Hash | Reverse-lookup (`task_id` → queue), written by the server |
 
 ## Task Data Fields
 
@@ -124,8 +126,8 @@ For maximum performance or when you need direct Redis access, you can enqueue ta
 ```bash
 redis-cli
 
-# Create task data
-HSET asynq:t:my-task-id \
+# Create task data ({inference.default} braces are literal hash tags)
+HSET asynq:{inference.default}:t:my-task-id \
   type task \
   payload '{"input": "hello world"}' \
   retry 0 \
@@ -133,7 +135,7 @@ HSET asynq:t:my-task-id \
   queue inference.default
 
 # Push to pending queue
-LPUSH asynq:inference.default:pending my-task-id
+LPUSH asynq:{inference.default}:pending my-task-id
 ```
 
 ### Python
@@ -149,8 +151,8 @@ def enqueue_task(queue: str, payload: dict, max_retry: int = 3) -> str:
 
     task_id = str(uuid.uuid4())
 
-    # Create task hash
-    r.hset(f"asynq:t:{task_id}", mapping={
+    # Create task hash (the {queue} braces are literal hash tags)
+    r.hset("asynq:{" + queue + "}:t:" + task_id, mapping={
         "type": "task",
         "payload": json.dumps(payload),
         "retry": "0",
@@ -159,7 +161,7 @@ def enqueue_task(queue: str, payload: dict, max_retry: int = 3) -> str:
     })
 
     # Push to pending list
-    r.lpush(f"asynq:{queue}:pending", task_id)
+    r.lpush("asynq:{" + queue + "}:pending", task_id)
 
     return task_id
 
@@ -179,8 +181,8 @@ const redis = new Redis();
 async function enqueueTask(queue, payload, maxRetry = 3) {
   const taskId = uuidv4();
 
-  // Create task hash
-  await redis.hset(`asynq:t:${taskId}`, {
+  // Create task hash (the {queue} braces are literal hash tags)
+  await redis.hset(`asynq:{${queue}}:t:${taskId}`, {
     type: 'task',
     payload: JSON.stringify(payload),
     retry: '0',
@@ -189,7 +191,7 @@ async function enqueueTask(queue, payload, maxRetry = 3) {
   });
 
   // Push to pending list
-  await redis.lpush(`asynq:${queue}:pending`, taskId);
+  await redis.lpush(`asynq:{${queue}}:pending`, taskId);
 
   return taskId;
 }
@@ -221,8 +223,8 @@ func enqueueTask(ctx context.Context, rdb *redis.Client, queue string, payload m
         return "", err
     }
 
-    // Create task hash
-    err = rdb.HSet(ctx, fmt.Sprintf("asynq:t:%s", taskID), map[string]any{
+    // Create task hash (the {queue} braces are literal hash tags)
+    err = rdb.HSet(ctx, fmt.Sprintf("asynq:{%s}:t:%s", queue, taskID), map[string]any{
         "type":      "task",
         "payload":   string(payloadJSON),
         "retry":     "0",
@@ -234,7 +236,7 @@ func enqueueTask(ctx context.Context, rdb *redis.Client, queue string, payload m
     }
 
     // Push to pending list
-    err = rdb.LPush(ctx, fmt.Sprintf("asynq:%s:pending", queue), taskID).Err()
+    err = rdb.LPush(ctx, fmt.Sprintf("asynq:{%s}:pending", queue), taskID).Err()
     if err != nil {
         return "", err
     }
@@ -259,14 +261,18 @@ import redis
 import json
 import time
 
-def wait_for_result(task_id: str, timeout: int = 30) -> dict:
-    """Wait for task result with timeout."""
+def wait_for_result(queue: str, task_id: str, timeout: int = 30) -> dict:
+    """Wait for task result with timeout.
+
+    The result is stored in the `result` field of the task hash
+    (asynq:{queue}:t:<id>), not in a separate key.
+    """
     r = redis.Redis(host='localhost', port=6379)
-    key = f"asynq:result:{task_id}"
+    key = "asynq:{" + queue + "}:t:" + task_id
 
     start = time.time()
     while time.time() - start < timeout:
-        result = r.get(key)
+        result = r.hget(key, "result")
         if result:
             return json.loads(result)
         time.sleep(0.1)
@@ -274,22 +280,27 @@ def wait_for_result(task_id: str, timeout: int = 30) -> dict:
     raise TimeoutError(f"Task {task_id} did not complete within {timeout}s")
 
 # Usage
-result = wait_for_result(task_id)
+result = wait_for_result("inference.default", task_id)
 print(f"Result: {result}")
 ```
 
 ### Check Task Status
 
 ```bash
-# View task data
-redis-cli HGETALL asynq:t:my-task-id
+# View task data (state, payload, result, ...)
+redis-cli HGETALL asynq:{inference.default}:t:my-task-id
 
 # Check if task is pending
-redis-cli LRANGE asynq:inference.default:pending 0 -1
+redis-cli LRANGE asynq:{inference.default}:pending 0 -1
 
 # Check if task is active (being processed)
-redis-cli LRANGE asynq:inference.default:active 0 -1
+redis-cli LRANGE asynq:{inference.default}:active 0 -1
 
-# Get result
-redis-cli GET asynq:result:my-task-id
+# Get just the result field
+redis-cli HGET asynq:{inference.default}:t:my-task-id result
 ```
+
+## See Also
+
+- [Task Lifecycle: TTL, Timeouts & Retries](task-lifecycle.md) — control how long tasks live and when they fail (per-queue overrides).
+- [Result Delivery](result-delivery.md) — retrieving task results.

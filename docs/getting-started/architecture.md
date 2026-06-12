@@ -125,15 +125,20 @@ Communication uses JSON over stdin/stdout:
 
 ### Redis Key Format
 
-runqy uses an asynq-compatible key format:
+runqy uses an asynq-compatible key format. The `{...}` braces around a queue name are **literal**
+(Redis Cluster hash tags that keep a queue's keys in the same slot):
 
 | Key | Purpose |
 |-----|---------|
 | `asynq:{queue}:pending` | List of pending task IDs |
 | `asynq:{queue}:active` | List of currently processing task IDs |
-| `asynq:t:{task_id}` | Hash containing task data |
-| `asynq:result:{task_id}` | Task result string |
+| `asynq:{queue}:t:{task_id}` | Hash containing task data — also holds the `result`, `state`, and `error_msg` fields |
+| `asynq:t:{task_id}` | Reverse-lookup hash (`task_id` → queue), written by the server for status lookups |
 | `asynq:workers:{worker_id}` | Worker heartbeat hash |
+
+!!! note "Results are a field, not a separate key"
+    A task's result is stored in the `result` field of its task hash
+    (`asynq:{queue}:t:{task_id}`) — there is no separate `asynq:result:*` key.
 
 ## Failure Handling
 
