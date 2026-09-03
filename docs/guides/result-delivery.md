@@ -1,3 +1,7 @@
+---
+description: "How Runqy delivers task results: why results are not stored in Redis by default, and how to use callbacks, object storage, or Redis storage."
+---
+
 # Result Delivery Patterns
 
 By default, runqy workers do **not** store task results in Redis. This guide explains why and how to handle result delivery in your tasks.

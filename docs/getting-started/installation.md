@@ -1,3 +1,7 @@
+---
+description: "Install the Runqy server and worker with the install script, Docker, or from source, on Linux, macOS, and Windows."
+---
+
 # Installation
 
 This guide covers all methods for installing runqy server and worker.

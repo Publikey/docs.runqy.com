@@ -1,3 +1,8 @@
+---
+title: Server Configuration
+description: "Configure the Runqy server with environment variables and CLI flags: Redis, PostgreSQL, API key, vault master key, and queue definitions in YAML."
+---
+
 # Server Configuration
 
 The server is configured via **environment variables** and **CLI flags**. CLI flags take priority over environment variables, which take priority over defaults.

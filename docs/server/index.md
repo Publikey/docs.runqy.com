@@ -1,3 +1,8 @@
+---
+title: Server Overview
+description: "The Runqy server is the control plane: worker registration, queue configuration, REST API, CLI, and the built-in monitoring dashboard."
+---
+
 # runqy Server
 
 The runqy server (`runqy/app`) is the central control plane that manages worker registration, queue configuration, and provides monitoring capabilities.

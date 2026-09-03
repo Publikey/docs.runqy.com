@@ -1,3 +1,7 @@
+---
+description: "REST API reference for the Runqy server: authentication, enqueueing tasks, the batch API, and queue and worker endpoints."
+---
+
 # Server API Reference
 
 ## Authentication

@@ -1,3 +1,8 @@
+---
+title: Python SDK Overview
+description: "The runqy-python SDK: @load and @task decorators for writing task handlers, plus a client for enqueueing tasks from your application."
+---
+
 # runqy-python SDK
 
 The `runqy-python` SDK provides simple decorators for writing task handlers that run on runqy workers. It also includes a client for enqueuing tasks.

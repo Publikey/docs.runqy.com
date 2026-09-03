@@ -1,3 +1,7 @@
+---
+description: "Reference for the runqy CLI: manage queues, tasks, workers, configuration, and vaults, locally or against a remote server."
+---
+
 # CLI Reference
 
 The runqy server includes a comprehensive command-line interface for managing queues, tasks, workers, and configurations. The CLI can operate locally (direct database access) or remotely (via HTTP API).

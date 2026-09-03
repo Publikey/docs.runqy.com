@@ -1,3 +1,8 @@
+---
+title: Worker Overview
+description: "The Runqy worker is a Go binary that pulls tasks from Redis and supervises your Python process, with automatic code deployment and recovery."
+---
+
 # runqy Worker
 
 The runqy worker (`runqy-worker`) is a Go binary that processes tasks from Redis and supervises Python processes.

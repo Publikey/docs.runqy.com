@@ -1,3 +1,7 @@
+---
+description: "How Runqy's server-driven bootstrap works: workers register with the server, clone task code from git, and process jobs from Redis queues."
+---
+
 # Architecture
 
 runqy uses a server-driven bootstrap architecture where workers are stateless and receive all configuration from a central server.

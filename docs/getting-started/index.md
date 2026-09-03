@@ -1,3 +1,7 @@
+---
+description: "What Runqy is and how it works: a self-hosted task queue with stateless workers that fetch their configuration and code from a central server."
+---
+
 # Introduction
 
 runqy is a distributed task queue system designed for machine learning inference and other workloads that require:

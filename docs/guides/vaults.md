@@ -1,3 +1,7 @@
+---
+description: "Store secrets for Runqy workers in encrypted vaults; entries are injected as environment variables when a worker bootstraps."
+---
+
 # Vaults: Secure Secret Management
 
 Vaults provide secure, encrypted storage for secrets that workers need to access external services. Vault entries are automatically injected as environment variables when workers bootstrap.
