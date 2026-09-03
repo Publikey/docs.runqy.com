@@ -1,3 +1,7 @@
+---
+description: "Set up a full local Runqy environment: Redis, PostgreSQL, the Go server, a worker, and a Python task, for development and testing."
+---
+
 # Local Development
 
 This guide covers setting up a complete local development environment for runqy.

@@ -1,3 +1,8 @@
+---
+title: Worker Configuration
+description: "Configure a Runqy worker with config.yml or environment variables: server URL, queues, concurrency, timeouts, recovery, and git credentials."
+---
+
 # Worker Configuration
 
 The worker is configured via a YAML file.

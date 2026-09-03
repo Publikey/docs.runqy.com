@@ -1,3 +1,7 @@
+---
+description: "Run your first Runqy task in minutes: start Redis and the server with Docker Compose, write a Python task with two decorators, and enqueue a job."
+---
+
 # Quick Start
 
 This guide walks you through setting up a local runqy environment with working examples.

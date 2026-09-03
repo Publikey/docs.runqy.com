@@ -1,3 +1,7 @@
+---
+description: "Official documentation for Runqy, the open-source, self-hosted task queue: install the server and workers, write Python tasks, enqueue jobs, and monitor queues."
+---
+
 # runqy Documentation
 
 **Distributed Task Queue** — Server-driven workers. Zero configuration. Deploy Python tasks at scale.

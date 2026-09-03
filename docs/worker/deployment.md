@@ -1,3 +1,7 @@
+---
+description: "Deploy Runqy workers on your own machines: Docker image, systemd, GPU hosts, and cloud instances, with zero-touch code deployment from GitHub."
+---
+
 # Worker Deployment
 
 ## Docker
