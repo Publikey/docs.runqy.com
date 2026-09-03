@@ -3,6 +3,10 @@ site_url: https://docs.runqy.com
 site_description: Documentation for runqy - a distributed task queue system with server-driven bootstrap architecture
 site_author: Publikey
 
+# Internal maintainer docs that must not be published or listed in the sitemap
+exclude_docs: |
+  FUNCTIONAL_TESTS.md
+
 repo_name: Publikey/docs.runqy.com
 repo_url: https://github.com/Publikey/docs.runqy.com
 edit_uri: edit/main/docs/
