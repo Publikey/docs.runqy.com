@@ -68,6 +68,8 @@ plugins:
           - guides/result-delivery.md: "Getting task results"
           - guides/vaults.md: "Secrets management with Vaults"
           - guides/monitoring.md: "Monitoring and metrics"
+          - guides/alerting.md: "Email alerts (SMTP/SendGrid): rules, per-queue overrides, delivery"
+          - guides/autoscaling.md: "GPU autoscaling on RunPod/Vast.ai: triggers, providers, safety rules"
 
 markdown_extensions:
   - pymdownx.emoji:
@@ -122,6 +124,8 @@ nav:
       - Result Delivery: guides/result-delivery.md
       - Vaults (Secrets): guides/vaults.md
       - Monitoring: guides/monitoring.md
+      - Email Alerts: guides/alerting.md
+      - GPU Autoscaling: guides/autoscaling.md
   - For LLMs:
       - "llms.txt ↗": "https://docs.runqy.com/llms.txt"
       - "llms-full.txt ↗": "https://docs.runqy.com/llms-full.txt"

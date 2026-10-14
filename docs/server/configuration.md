@@ -47,7 +47,10 @@ CLI flags > Environment variables > Defaults
 | Variable | Default | CLI Flag | Description |
 |----------|---------|----------|-------------|
 | `PORT` | `3000` | `--port` | HTTP server port |
-| `RUNQY_API_KEY` | — | `--api-key` (global) | API key for authenticated endpoints |
+| `RUNQY_API_KEY` | — | `--api-key` (global) | Admin API key for authenticated endpoints |
+| `RUNQY_WORKER_API_KEY` | — | — | Optional worker-scoped key (worker registration only). Required by real autoscale providers. See [API key roles](api.md#api-key-roles) |
+| `RUNQY_CLIENT_API_KEY` | — | — | Optional client-scoped key (enqueue only) |
+| `RUNQY_PUBLIC_URL` | — | — | Public URL of this server, e.g. `https://runqy.example.com`. Required by real autoscale providers (rented machines connect to it); used for dashboard links in alert emails |
 
 ### Redis
 
@@ -111,6 +114,16 @@ cause the server to refuse to start.
 | `RUNQY_DEFAULT_PENDING_TIMEOUT` | `0` | Max age in pending before archival (`0` = disabled) |
 | `RUNQY_DEFAULT_ACTIVE_TIMEOUT` | `0` | Max execution time before a retriable timeout (`0` = disabled) |
 
+### Autoscaling & Alerts
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `RUNQY_SMTP_PASSWORD` | — | SMTP password used when the alert settings leave `smtp.password` empty |
+| `RUNQY_SENDGRID_API_KEY` | — | SendGrid API key used when the alert settings leave `sendgrid.api_key` empty |
+
+Autoscaling also relies on `RUNQY_VAULT_MASTER_KEY`, `RUNQY_PUBLIC_URL` and `RUNQY_WORKER_API_KEY`
+(see the [Autoscaling guide](../guides/autoscaling.md#prerequisites)).
+
 ## Queue Worker Definitions (YAML)
 
 !!! note "Optional"
@@ -145,6 +158,11 @@ queues:
 |--------|------|----------|-------------|
 | `priority` | int | Yes | Queue priority (higher = more important) |
 | `deployment` | object | Yes | Deployment configuration |
+| `autoscale` | object | No | GPU autoscaling for this queue. See the [Autoscaling guide](../guides/autoscaling.md) |
+| `alerts` | object | No | Alert overrides for this queue (mute, replace or disable rules). See the [Alerts guide](../guides/alerting.md#per-queue-overrides) |
+
+A YAML file may also contain a top-level `alerts` block (next to `queues`) holding the global
+alert settings; define it in one file only. See the [Alerts guide](../guides/alerting.md).
 
 ### Deployment Options
 
@@ -163,7 +181,10 @@ queues:
 
 !!! note "Dependencies are auto-detected"
     The worker installs Python dependencies automatically from a `requirements.txt` (pip) or a
-    `pyproject.toml` (poetry) at the repository root — there is no `requirements_file` option.
+    `pyproject.toml` (poetry) found in `code_path` (or at the repository root when `code_path` is
+    not set) — there is no `requirements_file` option. If your task lives in a subfolder of the
+    repository, set `code_path` to it and make `startup_cmd` relative to that folder
+    (e.g. `code_path: dummy-task`, `startup_cmd: python main.py`).
 
 ### Task Lifecycle Limits
 

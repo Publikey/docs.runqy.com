@@ -16,6 +16,8 @@ The built-in web dashboard at `/monitoring` provides real-time visibility into y
 - **Queue Sizes**: Live view of pending, active, retry, and archived tasks per queue
 - **Worker Status**: Monitor worker health, active tasks, and heartbeats
 - **Task Management**: Inspect, retry, or delete tasks directly from the UI
+- **Alerts**: Active alerts, notification history and email settings (see [Email Alerts](alerting.md))
+- **Autoscaling**: GPU instances, their cost and the provider registry (see [GPU Autoscaling](autoscaling.md))
 
 The dashboard works out of the box using Redis data. No additional setup required.
 
@@ -138,7 +140,7 @@ For advanced monitoring with sub-second time-series data, runqy integrates with 
 | Task history | Daily aggregates (90 days) | Sub-second time-series |
 | Real-time throughput | Snapshot totals | Rate per second |
 | Custom dashboards | Basic dashboard | Full Grafana support |
-| Alerting | Manual monitoring | AlertManager integration |
+| Alerting | Built-in [email alerts](alerting.md) | AlertManager integration |
 | Retention | 90 days in Redis | Configurable (years) |
 
 ### Architecture
@@ -301,6 +303,11 @@ scrape_configs:
 ```
 
 ## Alerting
+
+!!! tip "Built-in email alerts"
+    runqy can email you directly (SMTP or SendGrid) when a queue has no workers, falls behind, has
+    an unhealthy worker or fails to autoscale, with no Prometheus needed. See
+    [Email Alerts](alerting.md). Use Alertmanager below if you already run Prometheus.
 
 ### Prometheus AlertManager
 

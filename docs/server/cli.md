@@ -26,6 +26,8 @@ go build -o runqy .
 | `runqy worker` | Worker management commands |
 | `runqy config` | Configuration management commands |
 | `runqy vault` | Vault management commands (secrets) |
+| `runqy autoscale` | GPU autoscaling: instances, protection, providers |
+| `runqy alerts` | Email alerts: status and test email |
 | `runqy login` | Save server credentials for remote mode |
 | `runqy logout` | Remove saved credentials |
 | `runqy auth` | Authentication management (status, list, switch) |
@@ -386,6 +388,90 @@ HF_TOKEN         hf****ab        yes     2024-01-15T10:30:00Z
 DEBUG_MODE       true            no      2024-01-15T11:00:00Z
 ```
 
+## Autoscale Commands
+
+Manage [GPU autoscaling](../guides/autoscaling.md). Per-queue rules live in the queue
+configuration; these commands cover live instances and the provider registry.
+
+### Instance Status
+
+```bash
+runqy autoscale status
+```
+
+```
+INSTANCE ID   QUEUE      PROVIDER    STATUS   WORKER     PROTECTED  COST
+as-231d…      inference  gpu-runpod  running  a1b2c3:7   false      $0.4120
+
+Total accumulated cost: $0.4120
+```
+
+### Protect an Instance
+
+```bash
+runqy autoscale protect as-231d7097-…     # never scaled down
+runqy autoscale unprotect as-231d7097-…
+```
+
+### Providers
+
+Provider commands need `RUNQY_VAULT_MASTER_KEY` on the server (credentials are encrypted).
+
+```bash
+runqy autoscale provider-types                     # mock, runpod, vastai
+runqy autoscale providers list
+runqy autoscale providers show gpu-runpod          # secrets masked
+
+# Create (config as literal JSON or @file)
+runqy autoscale providers create my-mock --type mock
+runqy autoscale providers create gpu-runpod --type runpod --config @runpod.json
+runqy autoscale providers create gpu-vast --type vastai --config '{"api_key":"xxx","gpu_name":"RTX_4090"}' --disabled
+
+# Update: only what you pass changes
+runqy autoscale providers update gpu-runpod --config @runpod.json
+runqy autoscale providers update gpu-runpod --disable    # keeps the stored config
+runqy autoscale providers update gpu-runpod --enable
+
+runqy autoscale providers delete gpu-vast --force
+```
+
+## Alerts Commands
+
+Inspect [email alerts](../guides/alerting.md) and test delivery. Settings are configured in YAML
+(top-level `alerts` block) or in the dashboard.
+
+### Alert Status
+
+```bash
+runqy alerts status
+runqy alerts status --history 100
+```
+
+```
+Alerting: enabled
+Last evaluation: 2026-10-14T11:58:21+02:00
+
+STATE   QUEUE      RULE        SINCE  DETAILS
+FIRING  inference  no_workers  2m10s  no live worker is serving the queue (3 job(s) pending)
+
+Recent notifications:
+TIME              STATUS  QUEUE      RULE        DETAILS
+2026-10-14 11:58  FIRING  inference  no_workers  no live worker is serving the queue (3 job(s) pending)
+```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--history` | `20` | Number of recent notifications to show |
+
+### Send a Test Email
+
+```bash
+runqy alerts test
+```
+
+Sends a test email to the configured recipients with the saved settings, and prints the delivery
+error if it fails.
+
 ## Remote Mode
 
 The CLI can operate in two modes:
@@ -437,6 +523,9 @@ runqy -s https://server:3000 -k API_KEY config reload
 | `vault list/create/show/delete` | Yes | Full support |
 | `vault set/unset/entries` | Yes | Full support |
 | `vault get` | No | Local-only (returns decrypted secrets) |
+| `autoscale status/protect/unprotect` | Yes | Full support |
+| `autoscale providers ...` | Yes | Full support |
+| `alerts status/test` | Yes | Full support |
 | `serve` | No | Server command, not applicable |
 
 ## Authentication Persistence
