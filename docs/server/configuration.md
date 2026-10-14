@@ -78,7 +78,7 @@ CLI flags > Environment variables > Defaults
 | Variable | Default | CLI Flag | Description |
 |----------|---------|----------|-------------|
 | `SQLITE_DB_PATH` | `runqy.db` | `--sqlite-path` | SQLite database file path |
-| — | — | `--sqlite` | Use SQLite instead of PostgreSQL |
+| `RUNQY_USE_SQLITE` | `false` | `--sqlite` | Use SQLite instead of PostgreSQL (`true`/`false`). The variable is handy on container platforms where changing the command is awkward |
 
 ### Monitoring & Security
 
