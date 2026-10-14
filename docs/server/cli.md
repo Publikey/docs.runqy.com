@@ -538,8 +538,11 @@ Save server credentials so you don't need to specify `--server` and `--api-key` 
 # Save credentials for a server (saved as "default" profile)
 runqy login -s https://production.example.com:3000 -k prod-api-key
 
-# Save with a custom profile name
+# Save with a custom profile name (it becomes the active profile)
 runqy login -s https://staging.example.com:3000 -k staging-key --name staging
+
+# Save a profile without switching to it
+runqy login -s https://staging.example.com:3000 -k staging-key --name staging --no-switch
 
 # API key can be prompted interactively
 runqy login -s https://server:3000
@@ -547,6 +550,10 @@ runqy login -s https://server:3000
 ```
 
 Credentials are stored in `~/.runqy/credentials.json` with restricted permissions (0600).
+
+`login` makes the profile it saves the **active** one and prints it (`Active profile: "staging"`),
+so the next commands go to the server you just logged into. Use `--no-switch` to keep the current
+profile, and `runqy auth switch <name>` to change it later.
 
 ### Using Saved Credentials
 
