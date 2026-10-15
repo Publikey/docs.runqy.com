@@ -64,7 +64,7 @@ runqy autoscale providers create my-mock --type mock
 runqy autoscale providers create gpu-runpod --type runpod \
   --config '{"api_key":"rpa_xxx","gpu_type_id":"NVIDIA GeForce RTX 4090","cloud_type":"SECURE"}'
 runqy autoscale providers create gpu-vast --type vastai \
-  --config '{"api_key":"xxx","gpu_name":"RTX_4090","max_price_per_hour":0.6}'
+  --config '{"api_key":"xxx","gpu_name":"RTX 4090","max_price_per_hour":0.6}'
 ```
 
 You can also manage providers from the dashboard's **Autoscaling** page. Secrets are masked when
@@ -91,7 +91,7 @@ your triggers. You can play the rented machine yourself by starting a worker wit
 | Key | Required | Description |
 |-----|----------|-------------|
 | `api_key` | yes | Vast.ai API key |
-| `gpu_name` | no | Vast format with underscores, e.g. `RTX_4090`. Takes precedence over the queue's `instance.gpu` (spaces are converted) |
+| `gpu_name` | no | Vast GPU name, e.g. `RTX 4090` (`RTX_4090` is accepted too). Takes precedence over the queue's `instance.gpu` |
 | `max_price_per_hour` | no | Price cap; takes precedence over the queue's `instance.max_price_per_hour` |
 | `disk_gb` | no | Used when the queue sets no `instance.disk_gb` |
 | `onstart` | no | Optional on-start script |
