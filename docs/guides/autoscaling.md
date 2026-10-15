@@ -86,7 +86,7 @@ your triggers. You can play the rented machine yourself by starting a worker wit
 | `cloud_type` | no | `SECURE` (default) or `COMMUNITY` |
 | `container_disk_gb` | no | Used when the queue sets no `instance.disk_gb` |
 | `volume_in_gb`, `volume_mount_path` | no | Optional persistent volume. None by default (RunPod would otherwise create and bill a 20 GB volume) |
-| `min_cuda_version` | no | Only hosts whose driver supports this CUDA version (default `"12.8"`, required by the inference image; `"none"` disables) |
+| `min_cuda_version` | no | Restrict hosts to CUDA versions from this one up to `13.0` (off by default: RunPod matches exact versions and its API stops at 13.0, so recent hosts on CUDA 13.1+ would be excluded) |
 
 **`vastai`** — Vast.ai marketplace: rents the **cheapest offer** matching the GPU, price and disk.
 
