@@ -84,7 +84,8 @@ your triggers. You can play the rented machine yourself by starting a worker wit
 | `gpu_type_id` | no | Exact RunPod GPU id, e.g. `NVIDIA GeForce RTX 4090`. Takes precedence over the queue's `instance.gpu` |
 | `cloud_type` | no | `SECURE` (default) or `COMMUNITY` |
 | `container_disk_gb` | no | Used when the queue sets no `instance.disk_gb` |
-| `volume_in_gb`, `volume_mount_path` | no | Optional persistent volume |
+| `volume_in_gb`, `volume_mount_path` | no | Optional persistent volume. None by default (RunPod would otherwise create and bill a 20 GB volume) |
+| `min_cuda_version` | no | Only hosts whose driver supports this CUDA version (default `"12.8"`, required by the inference image; `"none"` disables) |
 
 **`vastai`** — Vast.ai marketplace: rents the **cheapest offer** matching the GPU, price and disk.
 
@@ -99,10 +100,11 @@ your triggers. You can play the rented machine yourself by starting a worker wit
 | `exclude_countries` | no | ISO country codes to avoid (default `["CN"]`: pulling from ghcr.io and cloning from GitHub is slow or blocked there). `[]` allows every country |
 | `countries` | no | Allow-list of ISO country codes (overrides `exclude_countries`) |
 | `min_download_mbps` | no | Minimum host download bandwidth (default `100`): the worker image weighs several GB |
+| `min_cuda_version` | no | Only hosts whose driver supports this CUDA version (default `"12.8"`; `"none"` disables) |
 
 The account may run machines runqy does not manage (e.g. hand-made production instances).
 runqy only reads and destroys the instances it created, and refuses to destroy any instance
-whose label does not start with `runqy-`.
+whose label (Vast.ai) or pod name (RunPod) does not start with `runqy-`.
 
 !!! note "Why the provider wins for the GPU name"
     Each provider names GPUs differently, so the exact id lives in the provider configuration.
