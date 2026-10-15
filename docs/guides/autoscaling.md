@@ -193,6 +193,12 @@ is never scaled down, not even by a `schedule`. Protected instances are skipped 
 A teardown is recorded before calling the provider and retried every evaluation until the
 provider confirms, so a provider error or a server restart cannot leave an untracked machine.
 
+**It slows down when machines never boot.** When an instance is destroyed because no worker
+became ready (bad image, task crashing at startup), the next instance waits `boot_timeout`, then
+2×, 4×… up to one hour. Without it, a broken image would rent and pay for a new machine every
+`boot_timeout`, forever. The first worker that becomes ready resets the pause. A machine that
+worked and then died (preemption, crash) does not count.
+
 **One server decides.** When several runqy servers share one Redis, a Redis lock elects a single
 autoscaler.
 
@@ -224,8 +230,9 @@ as-231d…      inference  gpu-runpod  running  a1b2c3:7        false      $0.41
 ```
 
 The dashboard's **Autoscaling** page shows the same, plus provider management. Instance states:
-`provisioning` → `running` → `draining` → `terminated`, or `failed` (with the reason in its
-metadata). Costs are estimated from `max_price_per_hour` and the time each instance was alive.
+`provisioning` → `booting` → `running` → `draining` → `terminated`, or `failed` (with the reason in
+its metadata). `booting` means the provider reports the machine up but no worker has registered
+yet (image pull, dependency install). Costs are estimated from `max_price_per_hour` and the time each instance was alive.
 
 Pair autoscaling with [alerts](alerting.md): the `autoscale_failure` rule emails you when
 provisioning fails or an instance is destroyed for failure.
