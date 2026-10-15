@@ -133,7 +133,9 @@ rules:
 ```
 
 !!! info "Paused queues are skipped"
-    A paused queue is expected to accumulate jobs, so no rule is evaluated for it.
+    A paused queue is expected to accumulate jobs, so no rule is evaluated for it. An alert
+    that was firing when the queue got paused (or muted, removed, or its rule removed) is
+    closed with a `RESOLVED` email giving the reason, so no alert is left open.
 
 ## Per-queue overrides
 

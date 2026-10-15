@@ -180,6 +180,9 @@ The autoscaler spends real money, so it errs on the side of not leaking machines
 hold the current count instead of adding one per poll. Provisioning failures (no offer, bad key,
 price too low) back off exponentially: poll interval × 2ⁿ, capped at 10 minutes.
 
+**It ignores paused work.** Pending jobs of a paused sub-queue do not count as load, so no
+machine is rented for jobs no worker will take. `min_workers` and schedules still apply.
+
 **It never destroys busy or protected workers.** Idleness is measured per instance from the
 worker's own activity. A worker running a task, or one that touched a task in the last 30 seconds,
 is never scaled down, not even by a `schedule`. Protected instances are skipped (see below).
