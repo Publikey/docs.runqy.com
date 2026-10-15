@@ -82,6 +82,7 @@ your triggers. You can play the rented machine yourself by starting a worker wit
 |-----|----------|-------------|
 | `api_key` | yes | RunPod API key |
 | `gpu_type_id` | no | Exact RunPod GPU id, e.g. `NVIDIA GeForce RTX 4090`. Takes precedence over the queue's `instance.gpu` |
+| `gpu_type_ids` | no | Acceptable GPU ids in order of preference; RunPod rents the first available. Cheap types are often out of stock, so a list makes rentals much more reliable. Takes precedence over `gpu_type_id` |
 | `cloud_type` | no | `SECURE` (default) or `COMMUNITY` |
 | `container_disk_gb` | no | Used when the queue sets no `instance.disk_gb` |
 | `volume_in_gb`, `volume_mount_path` | no | Optional persistent volume. None by default (RunPod would otherwise create and bill a 20 GB volume) |
