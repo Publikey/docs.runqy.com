@@ -95,6 +95,14 @@ your triggers. You can play the rented machine yourself by starting a worker wit
 | `max_price_per_hour` | no | Price cap; takes precedence over the queue's `instance.max_price_per_hour` |
 | `disk_gb` | no | Used when the queue sets no `instance.disk_gb` |
 | `onstart` | no | Optional on-start script |
+| `verified_only` | no | Rent only machines verified by Vast (default `true`) |
+| `exclude_countries` | no | ISO country codes to avoid (default `["CN"]`: pulling from ghcr.io and cloning from GitHub is slow or blocked there). `[]` allows every country |
+| `countries` | no | Allow-list of ISO country codes (overrides `exclude_countries`) |
+| `min_download_mbps` | no | Minimum host download bandwidth (default `100`): the worker image weighs several GB |
+
+The account may run machines runqy does not manage (e.g. hand-made production instances).
+runqy only reads and destroys the instances it created, and refuses to destroy any instance
+whose label does not start with `runqy-`.
 
 !!! note "Why the provider wins for the GPU name"
     Each provider names GPUs differently, so the exact id lives in the provider configuration.
@@ -195,6 +203,11 @@ is never scaled down, not even by a `schedule`. Protected instances are skipped 
 
 A teardown is recorded before calling the provider and retried every evaluation until the
 provider confirms, so a provider error or a server restart cannot leave an untracked machine.
+
+**It moves on from broken hosts.** On marketplaces like Vast.ai, some machines cannot start the
+container at all (Docker or GPU errors on the host). Such an instance is destroyed as soon as the
+provider reports it, its machine is avoided for 24 hours, and the next instance is rented after a
+short pause (30s, doubling up to 10 minutes) instead of the boot-failure backoff below.
 
 **It slows down when machines never boot.** When an instance is destroyed because no worker
 became ready (bad image, task crashing at startup), the next instance waits `boot_timeout`, then
