@@ -167,6 +167,8 @@ go build -o runqy-worker ./cmd/worker
 4. **Wait**: Wait for `{"status": "ready"}` from Python
 5. **Process**: Dequeue tasks, send to Python, write results to Redis
 6. **Heartbeat**: Periodically update worker status in Redis
+7. **Control**: Listen for [control commands](../guides/worker-control.md) (drain, resume, code
+   update, worker update, config reload) on the Redis control channel
 
 ## Source Code
 
@@ -188,3 +190,4 @@ runqy-worker/
 
 - [Configuration Reference](configuration.md)
 - [Deployment Guide](deployment.md)
+- [Worker Control](../guides/worker-control.md)

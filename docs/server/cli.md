@@ -472,6 +472,38 @@ runqy alerts test
 Sends a test email to the configured recipients with the saved settings, and prints the delivery
 error if it fails.
 
+## Control Commands
+
+Send commands to workers over the Redis control channel. See the
+[Worker Control guide](../guides/worker-control.md).
+
+```bash
+runqy control drain --target inference          # stop taking new tasks
+runqy control resume --target inference
+runqy control code-update --target inference    # update code, deps, restart the process
+runqy control worker-update --version 0.4.1     # install a worker release in place
+runqy control config-reload --target inference  # run the task's @reload handler
+```
+
+```
+Sent drain to queue inference (id 2223310d948b29a8, 1 receiver(s)).
+Check the outcome with: runqy worker info <worker_id>
+```
+
+| Flag | Description |
+|------|-------------|
+| `-t`, `--target` | Worker id or queue name (default: every worker) |
+| `--version` | Release to install (`worker-update` only, required) |
+| `--timeout` | How long to wait for tasks in flight, e.g. `10m` (code and worker updates default to `30m`) |
+
+`runqy worker info <id>` shows the worker version, the held queues and the last command:
+
+```
+Version:     0.4.0
+Held:        inference (not taking new tasks)
+Last cmd:    code_update done: updated inference main (process restarted) (5s ago)
+```
+
 ## Remote Mode
 
 The CLI can operate in two modes:

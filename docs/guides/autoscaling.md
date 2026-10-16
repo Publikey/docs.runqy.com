@@ -198,6 +198,12 @@ machine is rented for jobs no worker will take. `min_workers` and schedules stil
 worker's own activity. A worker running a task, or one that touched a task in the last 30 seconds,
 is never scaled down, not even by a `schedule`. Protected instances are skipped (see below).
 
+**It drains before it destroys.** A scale-down first [drains](worker-control.md#drain-and-resume)
+the worker: it stops taking tasks, and the machine is destroyed once the worker reports
+`drained`. If new work arrives meanwhile and the instance is kept, the worker is resumed.
+Workers older than runqy-worker v0.4.0 do not drain and are destroyed right away; a task they
+picked up at that exact moment returns to the queue when its lease expires.
+
 **It cleans up what it pays for.** An instance is destroyed and marked `failed` when:
 
 - the provider reports it failed or terminated (it is destroyed anyway, e.g. to free Vast.ai storage);
@@ -218,12 +224,13 @@ became ready (bad image, task crashing at startup), the next instance waits `boo
 `boot_timeout`, forever. The first worker that becomes ready resets the pause. A machine that
 worked and then died (preemption, crash) does not count.
 
+**Pauses survive restarts.** The provisioning pauses above and the Vast.ai hosts to avoid are
+kept in Redis (`runqy:autoscale:backoff`, `runqy:autoscale:provider-state:<provider>`): a server
+restart, a new leader or a provider config change does not forget them and rent a broken setup
+again.
+
 **One server decides.** When several runqy servers share one Redis, a Redis lock elects a single
 autoscaler.
-
-!!! warning "Scale-down is not a graceful drain yet"
-    An idle worker is destroyed without a shutdown handshake. In the rare case it picked up a task
-    at that exact moment, the task returns to the queue when its lease expires and is retried.
 
 ## Protecting an instance
 

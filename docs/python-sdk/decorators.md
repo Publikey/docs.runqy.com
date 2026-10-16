@@ -1,5 +1,5 @@
 ---
-description: "Reference for the @load and @task decorators and the run() loop in the runqy-python SDK, with the stdin/stdout protocol they implement."
+description: "Reference for the @load, @task and @reload decorators and the run() loop in the runqy-python SDK, with the stdin/stdout protocol they implement."
 ---
 
 # Decorators Reference
@@ -67,6 +67,37 @@ def handle(payload: dict, ctx: Any) -> dict
 
 To signal that a task failed but should be retried, raise an exception. The worker will handle retry logic based on the task's `max_retry` setting.
 
+## `@reload`
+
+Marks a function that reloads configuration **without restarting the process**, triggered by the
+worker's [`config_reload`](../guides/worker-control.md#config-reload) command
+(`runqy control config-reload`). Requires runqy-python 0.3.0 and runqy-worker 0.4.0.
+
+```python
+from runqy_python import reload
+
+@reload
+def refresh(ctx):
+    """Re-read the remote config; keep the loaded models."""
+    ctx["models"] = fetch_models_yml()
+    return ctx
+```
+
+**Signature:**
+
+```python
+def refresh(ctx: Any) -> Any
+```
+
+**Parameters:** `ctx` is the current context (the `@load` return value, or `None`).
+
+**Returns:** the new context, or `None` to keep the current one. Without `@load`, the return
+value is ignored.
+
+The reload runs **between tasks**, in the same order as the tasks the worker already sent. If it
+raises, the worker reports the command as failed and the process keeps its previous context.
+Only processes with a `@reload` handler receive the command; one `@reload` per process.
+
 ## `run()`
 
 Enters the stdin/stdout loop for long-running mode.
@@ -114,12 +145,26 @@ This function:
 {"task_id": "abc123", "payload": {"msg": "hello"}}
 ```
 
+**Control request** (only sent to processes that announced the capability):
+
+```json
+{"task_id": "control-2223310d948b29a8", "type": "runqy.control", "control": "reload"}
+```
+
+It is answered like a task, with `{"reloaded": true}` as result or an `error`.
+
 ### Output Format (stdout)
 
 **Ready signal (after `@load`):**
 
 ```json
 {"status": "ready"}
+```
+
+With a `@reload` handler, the ready signal announces it:
+
+```json
+{"status": "ready", "capabilities": ["reload"]}
 ```
 
 **Task response:**
