@@ -14,6 +14,21 @@ Authorization: Bearer {api_key}
 
 The API key is configured via the `RUNQY_API_KEY` environment variable on the server.
 
+### API key roles
+
+Besides the admin key, two optional keys limit what a caller can do:
+
+| Variable | Role | Can call |
+|----------|------|----------|
+| `RUNQY_API_KEY` | admin | Everything |
+| `RUNQY_WORKER_API_KEY` | worker | `POST /worker/register` |
+| `RUNQY_CLIENT_API_KEY` | client | `POST /queue/add`, `POST /queue/add-batch` |
+
+`GET /queue/{task_id}` needs no key (the task id acts as the capability).
+
+Give workers the worker key so a compromised machine cannot manage queues or read secrets. The
+[autoscaler](../guides/autoscaling.md) requires it: it is the key sent to rented GPU machines.
+
 ## Worker Endpoints
 
 ### `POST /worker/register`
@@ -394,6 +409,130 @@ Delete a vault entry.
   "message": "entry deleted successfully"
 }
 ```
+
+---
+
+## Autoscale Endpoints
+
+GPU autoscaling status and provider management. Admin key required. Provider endpoints need
+`RUNQY_VAULT_MASTER_KEY` (credentials are stored encrypted). See the
+[Autoscaling guide](../guides/autoscaling.md).
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/autoscale/status` | Tracked instances, states and accumulated cost |
+| `POST` | `/api/autoscale/instances/{id}/protect` | Protect an instance from scale-down |
+| `POST` | `/api/autoscale/instances/{id}/unprotect` | Remove the protection |
+| `GET` | `/api/autoscale/provider-types` | Available provider types (`mock`, `runpod`, `vastai`) |
+| `GET` | `/api/autoscale/providers` | List providers (secrets masked) |
+| `POST` | `/api/autoscale/providers` | Create a provider |
+| `GET` | `/api/autoscale/providers/{name}` | Get a provider (secrets masked) |
+| `PUT` | `/api/autoscale/providers/{name}` | Update a provider |
+| `DELETE` | `/api/autoscale/providers/{name}` | Delete a provider |
+
+**`POST /api/autoscale/providers` body:**
+
+```json
+{
+  "name": "gpu-runpod",
+  "provider_type": "runpod",
+  "config": { "api_key": "rpa_xxx", "gpu_type_id": "NVIDIA GeForce RTX 4090" },
+  "enabled": true
+}
+```
+
+`PUT` is a partial update: omit `config` to keep the stored configuration, omit `enabled` to keep
+the current flag. A secret sent back in its masked form (as returned by `GET`) keeps its stored value.
+
+**`GET /api/autoscale/status` response:**
+
+```json
+{
+  "instances": [
+    {
+      "instance_id": "as-231d7097-…",
+      "provider": "gpu-runpod",
+      "queue": "inference",
+      "status": "running",
+      "worker_id": "a1b2c3:7",
+      "protected": false,
+      "price_per_hour": 0.6,
+      "cost_accumulated": 0.412,
+      "created_at": "2026-10-14T10:02:11Z",
+      "last_job_at": "2026-10-14T10:20:40Z"
+    }
+  ],
+  "count": 1,
+  "total_cost": 0.412
+}
+```
+
+---
+
+## Alert Endpoints
+
+Email alerting. Admin key required. See the [Alerts guide](../guides/alerting.md).
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/alerts?history=50` | Active alerts, recent notifications, evaluator status |
+| `GET` | `/api/alerts/settings` | Global alert settings (literal secrets masked) |
+| `PUT` | `/api/alerts/settings` | Replace the global alert settings |
+| `POST` | `/api/alerts/test` | Send a test email |
+
+**`GET /api/alerts` response:**
+
+```json
+{
+  "enabled": true,
+  "active": [
+    {
+      "queue": "inference",
+      "rule": "no_workers",
+      "firing": true,
+      "since": "2026-10-14T09:58:21Z",
+      "fired_at": "2026-10-14T09:58:21Z",
+      "message": "no live worker is serving the queue (3 job(s) pending)"
+    }
+  ],
+  "history": [
+    {
+      "time": "2026-10-14T09:58:21Z",
+      "queue": "inference",
+      "rule": "no_workers",
+      "status": "firing",
+      "message": "no live worker is serving the queue (3 job(s) pending)"
+    }
+  ],
+  "status": {
+    "last_eval": "2026-10-14T09:58:51Z",
+    "last_sent": "2026-10-14T09:58:21Z"
+  }
+}
+```
+
+`active` lists conditions that are firing, and those still waiting for their `for` duration
+(`firing: false`). History statuses are `firing`, `repeat`, `resolved` and `event`.
+
+**`PUT /api/alerts/settings` body:** the same fields as the YAML `alerts` block, in JSON:
+
+```json
+{
+  "enabled": true,
+  "provider": "smtp",
+  "from": "runqy <alerts@example.com>",
+  "recipients": ["ops@example.com"],
+  "smtp": { "host": "smtp.example.com", "port": 587, "tls": "starttls", "username": "alerts@example.com", "password": "vault://mail/smtp_password" },
+  "rules": [{ "type": "no_workers", "for": "2m" }, { "type": "latency", "max_latency": "10m" }],
+  "repeat_interval": "4h",
+  "send_resolved": true
+}
+```
+
+Invalid settings return `400` with the reason. A secret sent back masked keeps its stored value.
+
+**`POST /api/alerts/test`:** with an empty body, uses the saved settings; with a settings body,
+tests those (unsaved) settings. Returns `502` with the delivery error if the email could not be sent.
 
 ---
 
