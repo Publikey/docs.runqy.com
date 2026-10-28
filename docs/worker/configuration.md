@@ -122,6 +122,7 @@ All configuration values can be set via environment variables, which take priori
 | `RUNQY_RECOVERY_COOLDOWN` | Stable run time to reset failure counter | `10m` |
 | `RUNQY_INSTANCE_ID` | Autoscaler correlation id, echoed in the heartbeat. Set automatically on machines the [autoscaler](../guides/autoscaling.md) provisions | - |
 | `RUNQY_PROTECTED` | Declare this worker protected from autoscaling scale-down (`true`/`false`) | `false` |
+| `RUNQY_UPDATE_BASE_URL` | Where [`worker_update`](../guides/worker-control.md#worker-update) downloads releases (mirror with the GitHub releases layout) | GitHub releases |
 
 ### Examples
 

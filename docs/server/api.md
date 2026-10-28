@@ -536,6 +536,45 @@ tests those (unsaved) settings. Returns `502` with the delivery error if the ema
 
 ---
 
+## Control Endpoint
+
+Send a command to workers. Admin key required. See the [Worker Control guide](../guides/worker-control.md).
+
+**`POST /api/control`**
+
+```json
+{
+  "action": "code_update",
+  "target": "inference",
+  "timeout": "15m"
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `action` | `drain`, `resume`, `code_update`, `worker_update` or `config_reload` |
+| `target` | Worker id or queue name; omitted: every worker |
+| `version` | Release to install, e.g. `0.4.1` (`worker_update` only, required) |
+| `timeout` | How long to wait for tasks in flight (Go duration) |
+
+**Response `202 Accepted`:**
+
+```json
+{
+  "id": "2223310d948b29a8",
+  "action": "code_update",
+  "channel": "runqy:control:inference",
+  "target": "queue inference",
+  "receivers": 2
+}
+```
+
+`receivers` is the number of workers that got the command (`0`: none is listening). The outcome
+appears in each worker's `last_command` in `GET /workers/{id}`, next to `version`,
+`control_actions` and `held`. An unknown action, a missing version or an unknown target returns `400`.
+
+---
+
 ## Swagger Documentation
 
 Interactive API documentation is available at:

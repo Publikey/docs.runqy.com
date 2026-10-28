@@ -165,7 +165,7 @@ queues:
 | `alerts` | object | No | Alert overrides for this queue (mute, replace or disable rules). See the [Alerts guide](../guides/alerting.md#per-queue-overrides) |
 
 Unknown keys are rejected: a misspelled or misplaced key makes the file fail to load (`runqy config
-validate` shows the line), and its queues keep their previous configuration. *(Since runqy v0.3.1;
+validate` shows the line), and its queues keep their previous configuration. *(Since runqy v0.4.0;
 earlier versions silently ignored them.)*
 
 A YAML file may also contain a top-level `alerts` block (next to `queues`) holding the global
@@ -302,7 +302,7 @@ queues:
     - Priorities only compare sub-queues served by the **same worker**. When a worker listens on
       several parent queues, the order between them is always weighted; `strict_priority` only
       orders the sub-queues of its own parent.
-    - Weighted ordering and `strict_priority` require runqy-worker v0.3.2+. Older workers ignore
+    - Weighted ordering and `strict_priority` require runqy-worker v0.4.0+. Older workers ignore
       `strict_priority` and poll the sub-queues in an order picked at random at startup.
 
 ### Naming Format

@@ -126,6 +126,7 @@ nav:
       - Monitoring: guides/monitoring.md
       - Email Alerts: guides/alerting.md
       - GPU Autoscaling: guides/autoscaling.md
+      - Worker Control: guides/worker-control.md
   - For LLMs:
       - "llms.txt ↗": "https://docs.runqy.com/llms.txt"
       - "llms-full.txt ↗": "https://docs.runqy.com/llms-full.txt"
