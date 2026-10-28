@@ -156,10 +156,17 @@ queues:
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `priority` | int | Yes | Queue priority (higher = more important) |
+| `priority` | int | Yes | Queue priority (higher = more important). Only used when the queue has no `sub_queues` (it becomes the priority of `.default`) |
+| `sub_queues` | list | No | Sub-queues (`name`, `priority`). See [Sub-Queues](#sub-queues) |
+| `strict_priority` | bool | No | Poll the sub-queues in strict priority order instead of the default weighted order. See [How priorities are applied](#how-priorities-are-applied) |
+| `limits` | object | No | Alias of `deployment.limits` (setting both is an error). See [Task Lifecycle](../guides/task-lifecycle.md) |
 | `deployment` | object | Yes | Deployment configuration |
 | `autoscale` | object | No | GPU autoscaling for this queue. See the [Autoscaling guide](../guides/autoscaling.md) |
 | `alerts` | object | No | Alert overrides for this queue (mute, replace or disable rules). See the [Alerts guide](../guides/alerting.md#per-queue-overrides) |
+
+Unknown keys are rejected: a misspelled or misplaced key makes the file fail to load (`runqy config
+validate` shows the line), and its queues keep their previous configuration. *(Since runqy v0.3.1;
+earlier versions silently ignored them.)*
 
 A YAML file may also contain a top-level `alerts` block (next to `queues`) holding the global
 alert settings; define it in one file only. See the [Alerts guide](../guides/alerting.md).
@@ -237,9 +244,9 @@ A common pattern is routing tasks from paid users to a high-priority sub-queue w
 queues:
   inference:
     sub_queues:
-      - name: premium    # Paid users — processed first
+      - name: premium    # Paid users — served first ~10 times out of 13
         priority: 10
-      - name: standard   # Free users — processed when premium queue is empty
+      - name: standard   # Free users
         priority: 3
     deployment:
       git_url: "https://github.com/example/inference.git"
@@ -259,6 +266,44 @@ else:
 ```
 
 Both sub-queues run the **same task code** (same deployment), but workers prioritize `inference.premium` tasks over `inference.standard` tasks.
+
+### How priorities are applied
+
+Each time a worker slot is free, the worker polls its sub-queues in a given order and takes the
+first task it finds. The `priority` values decide that order:
+
+- **Weighted (default)** — the order is drawn again for every task: a sub-queue comes first with
+  a probability proportional to its priority. With `premium: 10` and `standard: 3`, when both
+  have waiting tasks, `premium` is served about 10 times out of 13 (77%) and `standard` 3 times
+  out of 13. Priorities are **ratios**: `6`/`4` gives only 60%/40%. A low sub-queue is never
+  starved. An empty sub-queue is skipped, so a lone backlog is always served at full speed.
+- **Strict** (`strict_priority: true` on the queue) — sub-queues are always polled in descending
+  priority (ties by name): a lower sub-queue is only served when every higher one is empty.
+  Use it for background work that must never delay the other sub-queues, at the risk of
+  starving it under constant load.
+
+```yaml
+queues:
+  video:
+    strict_priority: true
+    sub_queues:
+      - name: priority
+        priority: 10
+      - name: normal
+        priority: 5
+      - name: low        # only when priority and normal are empty
+        priority: 1
+    deployment: ...
+```
+
+!!! note
+    - There is no preemption: a task already running keeps its slot until it finishes, even if
+      a higher-priority task arrives meanwhile.
+    - Priorities only compare sub-queues served by the **same worker**. When a worker listens on
+      several parent queues, the order between them is always weighted; `strict_priority` only
+      orders the sub-queues of its own parent.
+    - Weighted ordering and `strict_priority` require runqy-worker v0.3.2+. Older workers ignore
+      `strict_priority` and poll the sub-queues in an order picked at random at startup.
 
 ### Naming Format
 

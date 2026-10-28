@@ -97,15 +97,22 @@ variables on the **server**:
 The worker wraps task execution in a deadline. If a task runs longer than `active_timeout`, it is
 treated as a **retriable failure** and re-queued (up to `max_retry`).
 
+- The limit applies **per attempt**: the clock starts when a worker picks the task up, time spent
+  waiting in `pending` is not counted (use `pending_timeout` for that), and each retry gets the
+  full duration again.
 - A per-request `timeout` passed to the enqueue API **overrides** the queue's `active_timeout`
-  for that task.
-- The stdio handler routes responses by task ID, so a late response from a timed-out task is
-  discarded harmlessly — the protocol does not desync.
+  for that task. It is an execution limit too, not a deadline covering the wait.
+- `one_shot` mode: the task's process is killed.
+- `long_running` mode: the shared Python process runs one task at a time and cannot be
+  interrupted, so the worker **restarts it** (stop, start, `@load` again) to abandon the
+  computation. The worker slot stays busy until the new process is ready, and the other tasks
+  already sent to that process are failed and retried. A planned restart does not count toward
+  the crash circuit breaker. *(runqy-worker v0.3.2+; older workers only stopped waiting while
+  Python kept computing, delaying the next tasks.)*
 
-!!! warning "Long-running processes"
-    For `long_running` workers (one shared Python process), a task that is genuinely stuck keeps
-    occupying the process even after the worker times out and retries it. `active_timeout` bounds
-    how long the **worker** waits, not how long Python keeps computing the abandoned task.
+!!! tip
+    With `long_running`, a timeout costs a full process restart (model reload). Size
+    `active_timeout` well above your normal task duration.
 
 ### `pending_timeout` — archived directly
 
