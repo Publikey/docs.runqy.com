@@ -120,7 +120,7 @@ runqy task enqueue -q inference.high -p '{"data":"value"}' --timeout 300
 |------|-------------|---------|
 | `-q, --queue` | Queue name (required) | - |
 | `-p, --payload` | JSON payload | `{}` |
-| `-t, --timeout` | Task timeout in seconds | `600` |
+| `-t, --timeout` | Max execution time per attempt, in seconds. `0` uses the queue's `active_timeout` | `0` |
 
 ### List Tasks
 
