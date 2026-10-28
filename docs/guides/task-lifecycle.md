@@ -107,7 +107,7 @@ treated as a **retriable failure** and re-queued (up to `max_retry`).
   interrupted, so the worker **restarts it** (stop, start, `@load` again) to abandon the
   computation. The worker slot stays busy until the new process is ready, and the other tasks
   already sent to that process are failed and retried. A planned restart does not count toward
-  the crash circuit breaker. *(runqy-worker v0.3.2+; older workers only stopped waiting while
+  the crash circuit breaker. *(runqy-worker v0.4.0+; older workers only stopped waiting while
   Python kept computing, delaying the next tasks.)*
 
 !!! tip
