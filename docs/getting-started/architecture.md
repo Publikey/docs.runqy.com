@@ -94,7 +94,7 @@ Both sub-queues run identical task code, but workers prioritize `inference.premi
 - Paid user request → enqueue to `inference.premium`
 - Free user request → enqueue to `inference.standard`
 
-When workers have capacity, they process higher-priority sub-queues first, ensuring paid users experience lower latency.
+When workers have capacity, they pick higher-priority sub-queues more often (weighted by priority), ensuring paid users experience lower latency. A queue can also opt into strict ordering. See [How priorities are applied](../server/configuration.md#how-priorities-are-applied).
 
 ### Queue Naming
 

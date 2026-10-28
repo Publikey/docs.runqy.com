@@ -47,7 +47,7 @@ Queues use the format `{parent}.{sub_queue}`:
 - `inference.standard` — Standard priority (free users)
 - `simple.default` — Default simple queue
 
-Workers register for a parent queue (e.g., `inference`) and process tasks from all its sub-queues, prioritizing higher-priority sub-queues first.
+Workers register for a parent queue (e.g., `inference`) and process tasks from all its sub-queues, picking higher-priority sub-queues more often (or always first with `strict_priority`). See [How priorities are applied](../server/configuration.md#how-priorities-are-applied).
 
 ### Automatic Default Fallback
 
