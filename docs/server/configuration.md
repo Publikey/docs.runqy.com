@@ -159,9 +159,14 @@ queues:
 | `priority` | int | Yes | Queue priority (higher = more important). Only used when the queue has no `sub_queues` (it becomes the priority of `.default`) |
 | `sub_queues` | list | No | Sub-queues (`name`, `priority`). See [Sub-Queues](#sub-queues) |
 | `strict_priority` | bool | No | Poll the sub-queues in strict priority order instead of the default weighted order. See [How priorities are applied](#how-priorities-are-applied) |
+| `limits` | object | No | Alias of `deployment.limits` (setting both is an error). See [Task Lifecycle](../guides/task-lifecycle.md) |
 | `deployment` | object | Yes | Deployment configuration |
 | `autoscale` | object | No | GPU autoscaling for this queue. See the [Autoscaling guide](../guides/autoscaling.md) |
 | `alerts` | object | No | Alert overrides for this queue (mute, replace or disable rules). See the [Alerts guide](../guides/alerting.md#per-queue-overrides) |
+
+Unknown keys are rejected: a misspelled or misplaced key makes the file fail to load (`runqy config
+validate` shows the line), and its queues keep their previous configuration. *(Since runqy v0.3.1;
+earlier versions silently ignored them.)*
 
 A YAML file may also contain a top-level `alerts` block (next to `queues`) holding the global
 alert settings; define it in one file only. See the [Alerts guide](../guides/alerting.md).
