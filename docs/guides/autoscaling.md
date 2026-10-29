@@ -148,6 +148,8 @@ queues:
         image: "ghcr.io/publikey/runqy-worker:inference"
         disk_gb: 50
         max_price_per_hour: 0.60
+        min_ram_gb: 32              # system RAM, not GPU memory
+        min_vcpu: 8
 ```
 
 The same block is editable in the dashboard (queue configuration → Autoscaling). A complete
@@ -164,6 +166,8 @@ example lives in [`examples/autoscale.yaml`](https://github.com/Publikey/runqy/b
 | `poll_interval` | `30s` | How often this queue is evaluated |
 | `boot_timeout` | `20m` | An instance without a ready worker after this is destroyed |
 | `instance.gpu` / `image` / `disk_gb` / `max_price_per_hour` | — | What to rent (see provider precedence above) |
+| `instance.min_ram_gb` | provider default | Minimum system RAM in GB. RunPod: `minRAMPerGPU` (its default is 8 GB). Vast.ai: offers with at least this `cpu_ram` |
+| `instance.min_vcpu` | provider default | Minimum vCPUs. RunPod: `minVCPUPerGPU` (its default is 2). Vast.ai: offers with at least this many effective vCPUs |
 
 ### Scale-up triggers
 
@@ -182,6 +186,36 @@ example lives in [`examples/autoscale.yaml`](https://github.com/Publikey/runqy/b
 | `schedule` | `cron` | Goes back to `min_workers`, regardless of idleness (busy workers are still spared) |
 
 Cron expressions use the standard 5 fields (`minute hour day month weekday`).
+
+### Watching only some sub-queues
+
+By default `no_workers`, `queue_depth` and `latency` look at every sub-queue of the queue. Add
+`sub_queues` to make a trigger watch only some of them, for example to rent machines for paid
+users while free users simply wait for the machines already running:
+
+```yaml
+queues:
+  inference:
+    sub_queues:
+      - name: premium
+        priority: 10
+      - name: standard
+        priority: 3
+    autoscale:
+      scale_up:
+        - trigger: no_workers
+          sub_queues: [premium]      # standard jobs alone never rent a machine
+        - trigger: latency
+          max_latency: "1m"
+          sub_queues: [premium]
+        - trigger: queue_depth       # no sub_queues: counts premium + standard
+          threshold: 200
+```
+
+Names are short sub-queue names (`premium`, not `inference.premium`). A YAML file naming a
+sub-queue the queue does not have is rejected at load; a config saved through the API or the
+dashboard is not checked against the other sub-queues, so the server logs a warning instead and
+that trigger never fires. Paused sub-queues count as empty, as for the whole-queue triggers.
 
 ## Safety rules
 
