@@ -1,4 +1,5 @@
 ---
+title: "Architecture: Server-Driven Worker Bootstrap"
 description: "How Runqy's server-driven bootstrap works: workers register with the server, clone task code from git, and process jobs from Redis queues."
 ---
 

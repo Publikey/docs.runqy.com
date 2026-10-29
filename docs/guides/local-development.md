@@ -1,4 +1,5 @@
 ---
+title: "Run a Task Queue Locally for Development"
 description: "Set up a full local Runqy environment: Redis, PostgreSQL, the Go server, a worker, and a Python task, for development and testing."
 ---
 

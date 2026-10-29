@@ -1,4 +1,5 @@
 ---
+title: "Getting Task Results: Polling, Callbacks, Storage"
 description: "How Runqy delivers task results: why results are not stored in Redis by default, and how to use callbacks, object storage, or Redis storage."
 ---
 

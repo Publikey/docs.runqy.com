@@ -1,4 +1,5 @@
 ---
+title: "Python Worker Examples: ML Models, Images, LLMs"
 description: "Python task examples for Runqy: one-shot tasks, long-running workers that load an ML model once, image generation, and LLM inference."
 ---
 

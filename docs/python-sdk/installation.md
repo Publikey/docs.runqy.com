@@ -1,5 +1,5 @@
 ---
-title: Python SDK Installation
+title: "Install the runqy-python SDK"
 description: "Install the runqy-python SDK with pip, from GitHub, or from source, and verify the installation."
 ---
 

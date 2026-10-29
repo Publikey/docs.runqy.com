@@ -1,4 +1,5 @@
 ---
+title: "Runqy CLI Reference"
 description: "Reference for the runqy CLI: manage queues, tasks, workers, configuration, and vaults, locally or against a remote server."
 ---
 

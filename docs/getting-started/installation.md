@@ -1,4 +1,5 @@
 ---
+title: "Install the Runqy Server, Worker and Python SDK"
 description: "Install the Runqy server and worker with the install script, Docker, or from source, on Linux, macOS, and Windows."
 ---
 

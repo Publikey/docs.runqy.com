@@ -1,6 +1,8 @@
-# docs.runqy.com
+# Runqy docs
 
-Documentation site for runqy. Built with Material for MkDocs.
+Documentation for [runqy](https://github.com/Publikey/runqy), published at **https://runqy.com/docs/**. Built with Material for MkDocs.
+
+Contributions are welcome: edit the Markdown under `docs/` and open a pull request.
 
 ## Local Development
 
@@ -13,4 +15,9 @@ Site runs at http://127.0.0.1:8000
 
 ## Deployment
 
-Auto-deploys to docs.runqy.com on push to main.
+On push to `main`:
+
+- the runqy.com build pulls this repository and publishes the docs under `runqy.com/docs/`;
+- `docs.runqy.com` is deployed from `redirect/`, which only redirects (301) each old page to its new URL.
+
+The redirect list in `redirect/staticwebapp.config.json` covers the pages that existed when the docs moved (October 2026). New pages do not need an entry.

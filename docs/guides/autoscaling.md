@@ -1,5 +1,5 @@
 ---
-title: GPU Autoscaling
+title: "GPU Autoscaling on RunPod and Vast.ai"
 description: "Let runqy rent GPU workers on RunPod or Vast.ai when a queue has work and destroy them when they go idle: triggers, providers, safety rules and setup."
 ---
 

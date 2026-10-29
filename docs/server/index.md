@@ -1,5 +1,5 @@
 ---
-title: Server Overview
+title: "Runqy Server: Queues, REST API and Dashboard"
 description: "The Runqy server is the control plane: worker registration, queue configuration, REST API, CLI, and the built-in monitoring dashboard."
 ---
 

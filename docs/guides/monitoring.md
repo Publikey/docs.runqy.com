@@ -1,4 +1,5 @@
 ---
+title: "Task Queue Monitoring: Dashboard, CLI, Prometheus"
 description: "Monitor Runqy queues and workers with the built-in dashboard, the CLI, Redis queries, or Prometheus and Grafana."
 ---
 

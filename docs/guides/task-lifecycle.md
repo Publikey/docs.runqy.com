@@ -1,5 +1,5 @@
 ---
-title: Task TTL, Timeouts and Retries
+title: "Task TTL, Timeouts and Retries"
 description: "Control how long Runqy tasks live: max retries, completed and archived TTLs, pending and active timeouts, set globally or per queue."
 ---
 

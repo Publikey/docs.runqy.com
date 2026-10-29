@@ -1,4 +1,5 @@
 ---
+title: "Deploy Workers with Docker, systemd or GPU Clouds"
 description: "Deploy Runqy workers on your own machines: Docker image, systemd, GPU hosts, and cloud instances, with zero-touch code deployment from GitHub."
 ---
 
