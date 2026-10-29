@@ -1,6 +1,6 @@
 ---
-title: Email Alerts
-description: "Get emailed when a runqy queue has no workers, falls behind, has an unhealthy worker or fails to autoscale. SMTP or SendGrid, global rules with per-queue overrides."
+title: "Email Alerts for Queues and Workers"
+description: "Get emailed when a runqy queue has no workers, backs up, has an unhealthy worker or fails to autoscale. SMTP or SendGrid, with per-queue overrides."
 ---
 
 # Email Alerts

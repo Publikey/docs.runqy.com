@@ -1,0 +1,18 @@
+/* Match the runqy.com palette (Skeleton "cerberus" theme) */
+:root {
+  --md-primary-fg-color: oklch(0.57 0.21 258.29);
+  --md-primary-fg-color--light: oklch(0.63 0.19 255.71);
+  --md-primary-fg-color--dark: oklch(0.52 0.19 258.15);
+  --md-accent-fg-color: oklch(0.63 0.19 255.71);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: oklch(0.25 0 0);
+  --md-typeset-a-color: oklch(0.63 0.19 255.71);
+}
+
+/* Dark header and tabs, like the runqy.com header */
+[data-md-color-scheme="slate"] .md-header,
+[data-md-color-scheme="slate"] .md-tabs {
+  background-color: oklch(0.18 0 0);
+}

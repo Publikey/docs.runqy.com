@@ -1,24 +1,25 @@
-name: Azure Static Web Apps CI/CD
+name: Docs CI/CD
+
+# The docs are published under https://runqy.com/docs/ by the runqy.com build,
+# which pulls this repository. This workflow:
+#   - checks that the docs build on every pull request,
+#   - on main, deploys docs.runqy.com as a redirect to runqy.com/docs/ (redirect/)
+#     and asks runqy.com to rebuild with the new content.
 
 on:
   push:
     branches:
       - main
   pull_request:
-    types: [opened, synchronize, reopened, closed]
     branches:
       - main
 
 jobs:
-  build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+  build:
     runs-on: ubuntu-latest
-    name: Build and Deploy Job
+    name: Build docs
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: true
-          lfs: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,24 +33,30 @@ jobs:
       - name: Build MkDocs site
         run: mkdocs build
 
-      - name: Deploy to Azure Static Web Apps
-        id: builddeploy
+  publish:
+    needs: build
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    name: Deploy redirect and rebuild runqy.com
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy docs.runqy.com redirect
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_GRASS_0FBDFD203 }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
           skip_app_build: true
-          app_location: "/site"
+          app_location: "/redirect"
 
-  close_pull_request_job:
-    if: github.event_name == 'pull_request' && github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    name: Close Pull Request Job
-    steps:
-      - name: Close Pull Request
-        id: closepullrequest
-        uses: Azure/static-web-apps-deploy@v1
-        with:
-          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_BRAVE_GRASS_0FBDFD203 }}
-          action: "close"
+      # RUNQY_COM_DISPATCH_TOKEN: fine-grained token on Publikey/runqy.com, "Contents: read and write".
+      - name: Rebuild runqy.com
+        env:
+          GH_TOKEN: ${{ secrets.RUNQY_COM_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::warning::RUNQY_COM_DISPATCH_TOKEN is not set: runqy.com was not rebuilt, the new docs are not live yet."
+            exit 0
+          fi
+          gh api repos/Publikey/runqy.com/dispatches -f event_type=docs-updated

@@ -1,5 +1,6 @@
-site_name: runqy Documentation
-site_url: https://docs.runqy.com
+site_name: Runqy docs
+# Published under runqy.com/docs/ by the runqy.com build; docs.runqy.com only redirects there
+site_url: https://runqy.com/docs/
 site_description: Documentation for runqy - a distributed task queue system with server-driven bootstrap architecture
 site_author: Publikey
 
@@ -13,19 +14,20 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
+  # Dark first, with the runqy.com accent (custom colors in stylesheets/extra.css)
   palette:
-    - scheme: default
-      primary: indigo
-      accent: indigo
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
     - scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+    - scheme: default
+      primary: custom
+      accent: custom
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
   features:
     - navigation.tabs
     - navigation.sections
@@ -36,6 +38,9 @@ theme:
     - content.tabs.link
     - content.code.copy
     - content.action.edit
+
+extra_css:
+  - stylesheets/extra.css
 
 plugins:
   - search
@@ -70,6 +75,7 @@ plugins:
           - guides/monitoring.md: "Monitoring and metrics"
           - guides/alerting.md: "Email alerts (SMTP/SendGrid): rules, per-queue overrides, delivery"
           - guides/autoscaling.md: "GPU autoscaling on RunPod/Vast.ai: triggers, providers, safety rules"
+          - guides/worker-control.md: "Remote worker control: drain, code update, worker update, config reload"
 
 markdown_extensions:
   - pymdownx.emoji:
@@ -128,10 +134,12 @@ nav:
       - GPU Autoscaling: guides/autoscaling.md
       - Worker Control: guides/worker-control.md
   - For LLMs:
-      - "llms.txt ↗": "https://docs.runqy.com/llms.txt"
-      - "llms-full.txt ↗": "https://docs.runqy.com/llms-full.txt"
+      - "llms.txt ↗": "https://runqy.com/docs/llms.txt"
+      - "llms-full.txt ↗": "https://runqy.com/docs/llms-full.txt"
 
 extra:
+  # The header logo leads back to the site the docs are published on
+  homepage: https://runqy.com/
   social:
     - icon: fontawesome/solid/globe
       link: https://runqy.com
@@ -139,7 +147,7 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/Publikey
     - icon: fontawesome/solid/robot
-      link: /llms.txt
+      link: https://runqy.com/docs/llms.txt
       name: LLMs.txt
 
 copyright: Copyright &copy; 2024-2026 Publikey

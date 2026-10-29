@@ -1,5 +1,5 @@
 ---
-title: Server Configuration
+title: "Server Configuration: Redis, PostgreSQL, Queues"
 description: "Configure the Runqy server with environment variables and CLI flags: Redis, PostgreSQL, API key, vault master key, and queue definitions in YAML."
 ---
 

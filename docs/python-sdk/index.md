@@ -1,5 +1,5 @@
 ---
-title: Python SDK Overview
+title: "Python SDK for Task Workers (runqy-python)"
 description: "The runqy-python SDK: @load and @task decorators for writing task handlers, plus a client for enqueueing tasks from your application."
 ---
 

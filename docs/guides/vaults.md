@@ -1,4 +1,5 @@
 ---
+title: "Secrets for Workers with Encrypted Vaults"
 description: "Store secrets for Runqy workers in encrypted vaults; entries are injected as environment variables when a worker bootstraps."
 ---
 

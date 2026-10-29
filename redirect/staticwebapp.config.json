@@ -1,0 +1,149 @@
+{
+  "routes": [
+    {
+      "route": "/getting-started/architecture*",
+      "redirect": "https://runqy.com/docs/getting-started/architecture/",
+      "statusCode": 301
+    },
+    {
+      "route": "/getting-started/installation*",
+      "redirect": "https://runqy.com/docs/getting-started/installation/",
+      "statusCode": 301
+    },
+    {
+      "route": "/getting-started/quickstart*",
+      "redirect": "https://runqy.com/docs/getting-started/quickstart/",
+      "statusCode": 301
+    },
+    {
+      "route": "/guides/alerting*",
+      "redirect": "https://runqy.com/docs/guides/alerting/",
+      "statusCode": 301
+    },
+    {
+      "route": "/guides/autoscaling*",
+      "redirect": "https://runqy.com/docs/guides/autoscaling/",
+      "statusCode": 301
+    },
+    {
+      "route": "/guides/enqueueing-tasks*",
+      "redirect": "https://runqy.com/docs/guides/enqueueing-tasks/",
+      "statusCode": 301
+    },
+    {
+      "route": "/guides/local-development*",
+      "redirect": "https://runqy.com/docs/guides/local-development/",
+      "statusCode": 301
+    },
+    {
+      "route": "/guides/monitoring*",
+      "redirect": "https://runqy.com/docs/guides/monitoring/",
+      "statusCode": 301
+    },
+    {
+      "route": "/guides/result-delivery*",
+      "redirect": "https://runqy.com/docs/guides/result-delivery/",
+      "statusCode": 301
+    },
+    {
+      "route": "/guides/task-lifecycle*",
+      "redirect": "https://runqy.com/docs/guides/task-lifecycle/",
+      "statusCode": 301
+    },
+    {
+      "route": "/guides/vaults*",
+      "redirect": "https://runqy.com/docs/guides/vaults/",
+      "statusCode": 301
+    },
+    {
+      "route": "/guides/worker-control*",
+      "redirect": "https://runqy.com/docs/guides/worker-control/",
+      "statusCode": 301
+    },
+    {
+      "route": "/python-sdk/decorators*",
+      "redirect": "https://runqy.com/docs/python-sdk/decorators/",
+      "statusCode": 301
+    },
+    {
+      "route": "/python-sdk/examples*",
+      "redirect": "https://runqy.com/docs/python-sdk/examples/",
+      "statusCode": 301
+    },
+    {
+      "route": "/python-sdk/installation*",
+      "redirect": "https://runqy.com/docs/python-sdk/installation/",
+      "statusCode": 301
+    },
+    {
+      "route": "/server/api*",
+      "redirect": "https://runqy.com/docs/server/api/",
+      "statusCode": 301
+    },
+    {
+      "route": "/server/cli*",
+      "redirect": "https://runqy.com/docs/server/cli/",
+      "statusCode": 301
+    },
+    {
+      "route": "/server/configuration*",
+      "redirect": "https://runqy.com/docs/server/configuration/",
+      "statusCode": 301
+    },
+    {
+      "route": "/worker/configuration*",
+      "redirect": "https://runqy.com/docs/worker/configuration/",
+      "statusCode": 301
+    },
+    {
+      "route": "/worker/deployment*",
+      "redirect": "https://runqy.com/docs/worker/deployment/",
+      "statusCode": 301
+    },
+    {
+      "route": "/getting-started*",
+      "redirect": "https://runqy.com/docs/getting-started/",
+      "statusCode": 301
+    },
+    {
+      "route": "/python-sdk*",
+      "redirect": "https://runqy.com/docs/python-sdk/",
+      "statusCode": 301
+    },
+    {
+      "route": "/server*",
+      "redirect": "https://runqy.com/docs/server/",
+      "statusCode": 301
+    },
+    {
+      "route": "/worker*",
+      "redirect": "https://runqy.com/docs/worker/",
+      "statusCode": 301
+    },
+    {
+      "route": "/llms.txt",
+      "redirect": "https://runqy.com/docs/llms.txt",
+      "statusCode": 301
+    },
+    {
+      "route": "/llms-full.txt",
+      "redirect": "https://runqy.com/docs/llms-full.txt",
+      "statusCode": 301
+    },
+    {
+      "route": "/sitemap.xml",
+      "redirect": "https://runqy.com/docs/sitemap.xml",
+      "statusCode": 301
+    },
+    {
+      "route": "/robots.txt",
+      "redirect": "https://runqy.com/robots.txt",
+      "statusCode": 301
+    },
+    {
+      "route": "/*",
+      "redirect": "https://runqy.com/docs/",
+      "statusCode": 301
+    }
+  ]
+}

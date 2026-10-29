@@ -1,6 +1,6 @@
 ---
-title: Worker Control
-description: "Drain, resume and update runqy workers remotely: update task code, install a new worker release in place or reload configuration, without recreating the machine."
+title: "Worker Control: Drain, Update and Reload Remotely"
+description: "Drain, resume and update runqy workers remotely: roll out new task code, install a worker release in place or reload configuration."
 ---
 
 # Worker Control

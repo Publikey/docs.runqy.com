@@ -1,4 +1,5 @@
 ---
+title: "What Is Runqy? A Distributed Python Task Queue"
 description: "What Runqy is and how it works: a self-hosted task queue with stateless workers that fetch their configuration and code from a central server."
 ---
 

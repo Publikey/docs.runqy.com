@@ -1,4 +1,5 @@
 ---
+title: "Python Task Queue Quickstart with Docker"
 description: "Run your first Runqy task in minutes: start Redis and the server with Docker Compose, write a Python task with two decorators, and enqueue a job."
 ---
 
@@ -42,14 +43,16 @@ This guide walks you through setting up a local runqy environment with working e
 
 === "Docker Compose Quickstart (Recommended)"
 
-    Run the full stack without cloning the repo:
+    Run the full stack without cloning the repo. The compose file mounts the example queue config from `./examples/`, so download both:
 
     ```bash
-    curl -O https://raw.githubusercontent.com/Publikey/runqy/main/docker-compose.quickstart.yml
-    docker-compose -f docker-compose.quickstart.yml up -d
+    mkdir -p examples
+    curl -fsSL -o examples/quickstart.yaml https://raw.githubusercontent.com/Publikey/runqy/main/examples/quickstart.yaml
+    curl -fsSLO https://raw.githubusercontent.com/Publikey/runqy/main/docker-compose.quickstart.yml
+    docker compose -f docker-compose.quickstart.yml up -d
     ```
 
-    This starts Redis, PostgreSQL, server, and worker. Skip to [Step 5](#5-enqueue-a-task).
+    This starts Redis, PostgreSQL, server, and worker, with the example queues already loaded. Skip to [Step 5](#5-enqueue-a-task).
 
 === "Docker Compose (Full Repo)"
 
