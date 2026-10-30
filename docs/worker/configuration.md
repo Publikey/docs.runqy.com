@@ -76,7 +76,7 @@ Controls auto-recovery when a supervised Python process crashes. Enabled by defa
 | `max_delay` | duration | No | Maximum delay between restart attempts (default: `5m`) |
 | `backoff_factor` | float | No | Multiplier for exponential backoff between restarts (default: `2.0`) |
 | `cooldown_period` | duration | No | Time without crash to reset the failure counter (default: `10m`) |
-| `exit_on_degraded` | bool | No | Stop the worker (exit status 1) once a process is degraded, so the container platform restarts it (default: `false`) |
+| `degraded_retry` | duration | No | How often a degraded process is tried again, on the same machine; `0` waits for a manual restart (default: `10m`) |
 
 ```yaml
 recovery:
@@ -86,15 +86,16 @@ recovery:
   max_delay: "5m"
   backoff_factor: 2.0
   cooldown_period: "10m"
-  exit_on_degraded: false
+  degraded_retry: "10m"
 ```
 
 !!! info "How auto-recovery works"
     When a Python process exits without the worker asking it to (a crash, a kill, or even
     exit status 0), the worker automatically restarts it with exponential backoff.
     If the process keeps crashing (reaching `max_restarts` without a stable run), the worker enters
-    **degraded state** and stops retrying — manual restart is required. If the process runs
-    successfully for `cooldown_period`, the failure counter resets to zero.
+    **degraded state**: it then tries again only every `degraded_retry` (10 minutes by default),
+    on the same machine, until the process starts. If the process runs successfully for
+    `cooldown_period`, the failure counter resets to zero.
 
 ## Environment Variables
 
@@ -123,7 +124,7 @@ All configuration values can be set via environment variables, which take priori
 | `RUNQY_RECOVERY_INITIAL_DELAY` | Initial delay before restart attempt | `1s` |
 | `RUNQY_RECOVERY_MAX_DELAY` | Maximum backoff delay between restarts | `5m` |
 | `RUNQY_RECOVERY_COOLDOWN` | Stable run time to reset failure counter | `10m` |
-| `RUNQY_RECOVERY_EXIT_ON_DEGRADED` | Stop the worker (exit status 1) once a process is degraded (`true`/`false`) | `false` |
+| `RUNQY_RECOVERY_DEGRADED_RETRY` | How often a degraded process is tried again (`0` = manual restart) | `10m` |
 | `RUNQY_INSTANCE_ID` | Autoscaler correlation id, echoed in the heartbeat. Set automatically on machines the [autoscaler](../guides/autoscaling.md) provisions | - |
 | `RUNQY_PROTECTED` | Declare this worker protected from autoscaling scale-down (`true`/`false`) | `false` |
 | `RUNQY_UPDATE_BASE_URL` | Where [`worker_update`](../guides/worker-control.md#worker-update) downloads releases (mirror with the GitHub releases layout) | GitHub releases |
@@ -208,12 +209,15 @@ takes tasks, so its `idle` scale-down destroys it.
 
 If the supervised Python process crashes repeatedly and exceeds `max_restarts` without a stable run:
 
-1. Worker enters **degraded state** — no more restart attempts
+1. Worker enters **degraded state** and stops the fast restart attempts
 2. Heartbeat reports `healthy: false` with recovery state `degraded`
 3. The worker takes no task from that queue (see above)
-4. **The worker must be restarted** to recover. With `recovery.exit_on_degraded: true`
-   (`RUNQY_RECOVERY_EXIT_ON_DEGRADED=true`) it stops itself with exit status 1, after letting
-   the other queues' tasks finish, so a container platform (Docker restart policy, Kubernetes,
-   Azure Container Apps) starts it again from scratch.
+4. Every `degraded_retry` (default `10m`, `RUNQY_RECOVERY_DEGRADED_RETRY`) it tries to start the
+   process again, on the same machine and in the same container: a rented machine is kept. Once
+   the process starts, the queue is served again and the crash counters reset. With
+   `degraded_retry: 0` the worker waits for a manual restart instead.
+
+On an autoscaled queue, a rented machine that stays degraded takes no task, so its `idle`
+scale-down timeout bounds how long you keep paying for it.
 
 To disable auto-recovery entirely (immediate degraded state on first crash), set `recovery.enabled: false`.
