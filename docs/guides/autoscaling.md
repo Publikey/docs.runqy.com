@@ -88,12 +88,13 @@ your triggers. You can play the rented machine yourself by starting a worker wit
 | `volume_in_gb`, `volume_mount_path` | no | Optional persistent volume. None by default (RunPod would otherwise create and bill a 20 GB volume) |
 | `min_cuda_version` | no | Restrict hosts to CUDA versions from this one up to `13.0` (off by default: RunPod matches exact versions and its API stops at 13.0, so recent hosts on CUDA 13.1+ would be excluded) |
 
-**`vastai`** — Vast.ai marketplace: rents the **cheapest offer** matching the GPU, price and disk.
+**`vastai`** — Vast.ai marketplace: rents the **cheapest offer** matching the GPU models, price and disk.
 
 | Key | Required | Description |
 |-----|----------|-------------|
 | `api_key` | yes | Vast.ai API key |
 | `gpu_name` | no | Vast GPU name, e.g. `RTX 4090` (`RTX_4090` is accepted too). Takes precedence over the queue's `instance.gpu` |
+| `gpu_names` | no | Acceptable Vast GPU names, e.g. `["RTX 3090", "RTX 4090", "RTX A5000"]`. The **cheapest** offer among them is rented: the list has no order of preference, `max_price_per_hour` keeps it from picking a card that is too expensive. One model is often out of stock or overpriced, so a list makes rentals more reliable and cheaper. Takes precedence over `gpu_name` |
 | `max_price_per_hour` | no | Price cap; takes precedence over the queue's `instance.max_price_per_hour` |
 | `disk_gb` | no | Used when the queue sets no `instance.disk_gb` |
 | `onstart` | no | Optional on-start script |
@@ -110,6 +111,14 @@ whose label (Vast.ai) or pod name (RunPod) does not start with `runqy-`.
 !!! note "Why the provider wins for the GPU name"
     Each provider names GPUs differently, so the exact id lives in the provider configuration.
     The queue's `instance.gpu` is the generic fallback.
+
+    To give queues different GPU classes, register several providers with the same API key,
+    e.g. `vast-24g` (`gpu_names` of 24 GB cards, higher price cap) for GPU queues and
+    `vast-cheap` (no GPU filter, low price cap) for light workers, and point each queue's
+    `autoscale.provider` at the right one.
+
+Vast.ai names must match exactly (`RTX 3090`, `RTX A5000`): a misspelt name raises no error, it
+simply never matches. When nothing matches, the error lists the searched models.
 
 ## 2. Enable autoscaling on a queue
 
@@ -292,7 +301,7 @@ as-231d…      inference  gpu-runpod  running  a1b2c3:7        false      $0.41
 The dashboard's **Autoscaling** page shows the same, plus provider management. Instance states:
 `provisioning` → `booting` → `running` → `draining` → `terminated`, or `failed` (with the reason in
 its metadata). `booting` means the provider reports the machine up but no worker has registered
-yet (image pull, dependency install). Costs are estimated from `max_price_per_hour` and the time each instance was alive.
+yet (image pull, dependency install). `runqy autoscale status` and the dashboard show the GPU actually rented and its hourly price, as reported by the provider (RunPod: the pod's price, Savings Plans included; Vast.ai: the rented offer). Costs are that price times the time each instance was alive; the queue's `instance.max_price_per_hour` is only used for providers that report no price.
 
 Pair autoscaling with [alerts](alerting.md): the `autoscale_failure` rule emails you when
 provisioning fails or an instance is destroyed for failure.
