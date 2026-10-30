@@ -76,6 +76,7 @@ Controls auto-recovery when a supervised Python process crashes. Enabled by defa
 | `max_delay` | duration | No | Maximum delay between restart attempts (default: `5m`) |
 | `backoff_factor` | float | No | Multiplier for exponential backoff between restarts (default: `2.0`) |
 | `cooldown_period` | duration | No | Time without crash to reset the failure counter (default: `10m`) |
+| `degraded_retry` | duration | No | How often a degraded process is tried again, on the same machine; `0` waits for a manual restart (default: `10m`) |
 
 ```yaml
 recovery:
@@ -85,13 +86,16 @@ recovery:
   max_delay: "5m"
   backoff_factor: 2.0
   cooldown_period: "10m"
+  degraded_retry: "10m"
 ```
 
 !!! info "How auto-recovery works"
-    When a Python process crashes, the worker automatically restarts it with exponential backoff.
+    When a Python process exits without the worker asking it to (a crash, a kill, or even
+    exit status 0), the worker automatically restarts it with exponential backoff.
     If the process keeps crashing (reaching `max_restarts` without a stable run), the worker enters
-    **degraded state** and stops retrying — manual restart is required. If the process runs
-    successfully for `cooldown_period`, the failure counter resets to zero.
+    **degraded state**: it then tries again only every `degraded_retry` (10 minutes by default),
+    on the same machine, until the process starts. If the process runs successfully for
+    `cooldown_period`, the failure counter resets to zero.
 
 ## Environment Variables
 
@@ -120,6 +124,7 @@ All configuration values can be set via environment variables, which take priori
 | `RUNQY_RECOVERY_INITIAL_DELAY` | Initial delay before restart attempt | `1s` |
 | `RUNQY_RECOVERY_MAX_DELAY` | Maximum backoff delay between restarts | `5m` |
 | `RUNQY_RECOVERY_COOLDOWN` | Stable run time to reset failure counter | `10m` |
+| `RUNQY_RECOVERY_DEGRADED_RETRY` | How often a degraded process is tried again (`0` = manual restart) | `10m` |
 | `RUNQY_INSTANCE_ID` | Autoscaler correlation id, echoed in the heartbeat. Set automatically on machines the [autoscaler](../guides/autoscaling.md) provisions | - |
 | `RUNQY_PROTECTED` | Declare this worker protected from autoscaling scale-down (`true`/`false`) | `false` |
 | `RUNQY_UPDATE_BASE_URL` | Where [`worker_update`](../guides/worker-control.md#worker-update) downloads releases (mirror with the GitHub releases layout) | GitHub releases |
@@ -187,13 +192,32 @@ Each worker instance:
 
 To scale, run multiple worker instances.
 
+## When the Process Is Down
+
+While a queue's Python process is down (crashed, restarting, or degraded), the worker **stops
+taking tasks for that queue**: they stay pending instead of being taken and failed. Other queues
+served by the same worker keep running. Tasks that were in flight when the process died fail
+right away and are retried as usual.
+
+So a restart (for example while a model loads again) only delays tasks, and a worker that stays
+down lets them pile up: the queue's latency grows, which fires the
+[`latency` alert](../guides/alerting.md) and, with [autoscaling](../guides/autoscaling.md), the
+`latency` trigger rents a replacement machine. A rented machine whose process is down no longer
+takes tasks, so its `idle` scale-down destroys it.
+
 ## Degraded State
 
 If the supervised Python process crashes repeatedly and exceeds `max_restarts` without a stable run:
 
-1. Worker enters **degraded state** — no more restart attempts
+1. Worker enters **degraded state** and stops the fast restart attempts
 2. Heartbeat reports `healthy: false` with recovery state `degraded`
-3. Tasks are returned to queue for retry (but will keep failing on this worker)
-4. **Manual restart of the worker is required** to recover
+3. The worker takes no task from that queue (see above)
+4. Every `degraded_retry` (default `10m`, `RUNQY_RECOVERY_DEGRADED_RETRY`) it tries to start the
+   process again, on the same machine and in the same container: a rented machine is kept. Once
+   the process starts, the queue is served again and the crash counters reset. With
+   `degraded_retry: 0` the worker waits for a manual restart instead.
 
-To disable auto-recovery entirely and revert to the old behavior (immediate degraded state on first crash), set `recovery.enabled: false`.
+On an autoscaled queue, a rented machine that stays degraded takes no task, so its `idle`
+scale-down timeout bounds how long you keep paying for it.
+
+To disable auto-recovery entirely (immediate degraded state on first crash), set `recovery.enabled: false`.
