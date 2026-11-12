@@ -1,184 +1,232 @@
 ---
-title: "Run a Task Queue Locally for Development"
-description: "Set up a full local Runqy environment: Redis, PostgreSQL, the Go server, a worker, and a Python task, for development and testing."
+title: "Running without Docker"
+description: "Run the runqy server and a worker from binaries on one machine, with SQLite, then enqueue a task and read its result."
 ---
 
-# Local Development
+# Running without Docker
 
-This guide covers setting up a complete local development environment for runqy.
+This guide runs the runqy server and one worker as plain processes on your machine, using SQLite instead of PostgreSQL. At the end you will have enqueued a task on an example queue and read its result. It also shows how to run a task script alone, with no worker, while you write it.
+
+The [quickstart](../getting-started/quickstart.md) covers the same ground with Docker Compose.
 
 ## Prerequisites
 
-- Go 1.21+
-- Python 3.9+
-- Redis
-- Git
+- The `runqy` and `runqy-worker` binaries: see [Installation](../getting-started/installation.md).
+- Git and Python 3 with the `venv` module, for the worker.
+- A Redis server on `localhost:6379`. The quickstart and the examples use Redis 7; use the same major version.
 
-## Setup
+If you have Docker, the shortest way to get Redis is:
 
-### 1. Start Redis
+```bash
+docker run -d --name redis -p 6379:6379 redis:7-alpine
+```
 
-=== "Docker"
+Otherwise install Redis with your package manager and start it.
+
+## Start the server
+
+=== "Linux/macOS"
 
     ```bash
-    docker run -d --name redis -p 6379:6379 redis:7-alpine
+    export REDIS_HOST=localhost
+    export REDIS_PORT=6379
+    export REDIS_PASSWORD=""
+    export RUNQY_API_KEY=dev-api-key
+    runqy serve --sqlite
     ```
 
-=== "macOS"
+=== "Windows"
+
+    ```powershell
+    $env:REDIS_HOST = "localhost"
+    $env:REDIS_PORT = "6379"
+    $env:REDIS_PASSWORD = ""
+    $env:RUNQY_API_KEY = "dev-api-key"
+    runqy serve --sqlite
+    ```
+
+`--sqlite` stores queue configs in a `runqy.db` file in the current directory, so no PostgreSQL is needed. The server prints a summary when it is ready:
+
+```text
+  Server: http://localhost:3000
+
+  Database     SQLite (runqy.db)
+  Redis        localhost:6379 [connected]
+  Queues       0
+  Vaults       disabled
+  Monitoring   /monitoring
+  Metrics      /metrics
+  Swagger      /swagger
+```
+
+The dashboard is at <http://localhost:3000/monitoring>. On the first visit it asks you to create the admin account.
+
+Leave the server running and open a second terminal.
+
+## Create the example queues
+
+Point the CLI at the server. `runqy login` saves the URL and key in `~/.runqy/credentials.json`, and the commands that follow use them:
+
+```bash
+runqy login --server http://localhost:3000 --api-key dev-api-key
+```
+
+```text
+Logged in to http://localhost:3000 (saved as "default")
+Active profile: "default"
+```
+
+!!! note "Why log in to a local server"
+    Without a saved server (or `--server`), the CLI works in local mode: `runqy config`, `runqy queue` and `runqy task` connect to PostgreSQL directly. That fails against a server started with `--sqlite`, so go through the server's API.
+
+Download the example queue config and load it:
+
+```bash
+curl -fsSLO https://raw.githubusercontent.com/Publikey/runqy/main/examples/quickstart.yaml
+runqy config create -f quickstart.yaml
+```
+
+The file defines two queues whose task code lives in the runqy repository: `quickstart-oneshot` (a new Python process per task) and `quickstart-longrunning` (one process kept alive between tasks). Neither declares sub-queues, so each gets a single `default` sub-queue. Check them:
+
+```bash
+runqy queue list
+```
+
+## Start a worker
+
+Open a third terminal in an **empty directory**. The worker reads its settings from the environment only when there is no `config.yml` in the directory it starts from.
+
+=== "Linux/macOS"
 
     ```bash
-    brew install redis
-    brew services start redis
+    export RUNQY_SERVER_URL=http://localhost:3000
+    export RUNQY_API_KEY=dev-api-key
+    export RUNQY_QUEUES=quickstart-oneshot,quickstart-longrunning
+    runqy-worker
     ```
 
-=== "Linux"
+=== "Windows"
+
+    ```powershell
+    $env:RUNQY_SERVER_URL = "http://localhost:3000"
+    $env:RUNQY_API_KEY = "dev-api-key"
+    $env:RUNQY_QUEUES = "quickstart-oneshot,quickstart-longrunning"
+    runqy-worker
+    ```
+
+The worker registers with the server, receives the Redis address and the two deployment specs, clones the task code into `./deployment/<queue>`, creates a virtualenv there and installs `requirements.txt`. It is ready when it logs:
+
+```text
+[INFO] Bootstrap complete, worker status: running
+[INFO] Worker running. Press Ctrl+C to stop.
+```
+
+In the second terminal, the worker now appears with the status `running`:
+
+```bash
+runqy worker list
+```
+
+If the worker stops before that, see the table of startup errors in [Deploying workers](deploying-workers.md#check-that-it-started).
+
+## Enqueue a task and read the result
+
+=== "Linux/macOS"
 
     ```bash
-    sudo apt install redis-server
-    sudo systemctl start redis
+    runqy task enqueue -q quickstart-oneshot -p '{"operation":"uppercase","data":"hello"}'
     ```
 
-### 2. Clone Repositories
+    ```text
+    Task enqueued successfully!
+      ID:    <task-id>
+      Queue: quickstart-oneshot.default
+      Type:  <type>
+    ```
 
-```bash
-mkdir runqy-dev && cd runqy-dev
-
-git clone https://github.com/Publikey/runqy.git
-git clone https://github.com/Publikey/runqy-worker.git
-```
-
-### 3. Start PostgreSQL (optional, for full features)
-
-=== "Docker"
+    Then read the task, using the id that was printed:
 
     ```bash
-    docker run -d --name postgres -p 5432:5432 \
-      -e POSTGRES_PASSWORD=devpassword \
-      postgres:15-alpine
+    runqy task get quickstart-oneshot.default <task-id>
     ```
 
-=== "Skip"
+    The output shows `State:       completed` and, under `Result:`, the value returned by the task.
 
-    PostgreSQL is optional for basic local development. The server can function with Redis-only configuration.
+=== "Windows"
 
-### 4. Configure and Start Server
+    PowerShell changes the quotes of JSON passed as a command-line argument, so call the REST API instead:
 
-```bash
-cd runqy
+    ```powershell
+    $task = Invoke-RestMethod -Method Post -Uri "http://localhost:3000/queue/add" `
+      -Headers @{ Authorization = "Bearer dev-api-key" } -ContentType "application/json" `
+      -Body '{"queue":"quickstart-oneshot","timeout":0,"data":{"operation":"uppercase","data":"hello"}}'
+    $task.info.id
+    ```
 
-# Create environment file
-cp .env.secret.sample .env.secret
+    Then read the task, waiting for it to finish:
 
-# Edit .env.secret with your credentials:
-cat > .env.secret << 'EOF'
-REDIS_HOST=localhost
-REDIS_PASSWORD=
-DATABASE_HOST=localhost
-DATABASE_PORT=5432
-DATABASE_USER=postgres
-DATABASE_PASSWORD=devpassword
-DATABASE_DBNAME=runqy_dev
-RUNQY_API_KEY=dev-api-key
-EOF
+    ```powershell
+    (Invoke-RestMethod -Uri "http://localhost:3000/queue/$($task.info.id)?wait=true").Info
+    ```
 
-cd app && go run .
+    The `state` field is `completed` and `result` holds the value returned by the task.
+
+The task returns:
+
+```json
+{"result": "HELLO"}
 ```
 
-The server starts on port 3000 by default.
+The result is readable because these queues set `redis_storage: true`. Without it the worker does not store results: see [Getting results](result-delivery.md).
 
-### 5. Configure and Start Worker
+Try the long-running queue the same way with `-q quickstart-longrunning`. Its result includes a `calls` counter that grows with each task, because the process and its state stay alive between tasks.
 
-In a new terminal:
+## Run a task script alone
 
-```bash
-cd runqy-worker
+While you write task code you do not need a server or a worker. A task script reads one JSON object per line on stdin and writes one JSON response per line on stdout, which is how the worker talks to it. You can do the same by hand.
 
-cat > config.yml << 'EOF'
-server:
-  url: "http://localhost:3000"
-  api_key: "dev-api-key"
-worker:
-  queue: "inference"
-  concurrency: 1
-  shutdown_timeout: 30s
-deployment:
-  dir: "./deployment"
-EOF
+Save this as `main.py`:
 
-go run ./cmd/worker
+```python
+from runqy_python import task, run_once
+
+
+@task
+def process(payload: dict) -> dict:
+    data = payload.get("data")
+    return {"result": data.upper() if isinstance(data, str) else data}
+
+
+if __name__ == "__main__":
+    run_once()
 ```
 
-## Testing
-
-### Test Python Task Directly
+Install the package and pipe a task in:
 
 ```bash
-cd test-dummy-task
-echo '{"task_id":"t1","payload":{"foo":"bar"}}' | python python/hello_world/dummy_task.py
+pip install runqy-python
+echo '{"task_id":"t1","payload":{"data":"hello"}}' | python main.py
 ```
 
-### Enqueue a Task
+```json
+{"status": "ready"}
+{"task_id": "t1", "result": {"result": "HELLO"}, "error": null, "retry": false}
+```
+
+The first line is the ready signal, the second the response. Anything the script prints with `print()` goes to stderr, so it cannot corrupt the protocol. A script that ends with `run()` instead of `run_once()` keeps reading: send several lines, then close stdin (Ctrl+D) to stop it.
+
+The decorators and the protocol are described in the [Python SDK reference](../reference/python-sdk.md).
+
+## Clean up
+
+Stop the worker and the server with Ctrl+C. To start from scratch, delete `runqy.db` in the server's directory and `deployment/` in the worker's directory, then remove the saved CLI profile:
 
 ```bash
-redis-cli
-
-HSET asynq:{inference.default}:t:test-1 type task payload '{"msg":"hello"}' retry 0 max_retry 2 queue inference.default
-LPUSH asynq:{inference.default}:pending test-1
+runqy logout
 ```
 
-### Check Results
+## Next steps
 
-```bash
-# The result is stored in the `result` field of the task hash
-redis-cli HGET asynq:{inference.default}:t:test-1 result
-```
-
-### Monitor Worker Health
-
-```bash
-# List worker heartbeat keys, then inspect one
-redis-cli KEYS "asynq:workers:*"
-redis-cli HGETALL asynq:workers:worker-abc123
-```
-
-## Debugging
-
-### View Worker Logs
-
-The worker outputs logs to stdout. Look for:
-
-- `Registered with server` — Successful server connection
-- `Deployed code` — Git clone completed
-- `Python process ready` — Received `{"status": "ready"}`
-- `Processing task` — Dequeued a task
-- `Task completed` — Task finished successfully
-
-### View Python Process Output
-
-In long-running mode, the Python process communicates via stdin/stdout. To debug:
-
-1. Add logging to stderr in your task code:
-   ```python
-   import sys
-   print("Debug message", file=sys.stderr)
-   ```
-
-2. The worker will forward stderr to its own logs.
-
-### Common Issues
-
-**Worker can't connect to server:**
-
-- Check server is running on the configured port
-- Verify API key matches between server and worker configs
-
-**Python process won't start:**
-
-- Check `startup_cmd` is correct
-- Verify Python dependencies are installed
-- Look for syntax errors in task code
-
-**Tasks stuck in pending:**
-
-- Check worker is healthy (Redis heartbeat)
-- Verify queue names match (including sub-queues)
+- [Your first task](../getting-started/first-task.md): deploy task code from your own repository.
+- [Deploying workers](deploying-workers.md): run workers on other machines.
+- [Production deployment](../operate/production.md): PostgreSQL, TLS and the rest.

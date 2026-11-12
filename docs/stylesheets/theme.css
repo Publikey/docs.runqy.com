@@ -1,0 +1,534 @@
+/* Component styling on top of Material, using the tokens in tokens.css.
+   Flat surfaces, hairline borders, no shadows: the same language as the runqy dashboard. */
+
+::selection {
+  background: var(--rq-selection);
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- Logo ---------------------------------------------------------------------------- */
+.rq-logo {
+  display: block;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+.md-header__button.md-logo .rq-logo,
+.md-nav__button.md-logo .rq-logo {
+  width: 1.3rem;
+  height: 1.3rem;
+  fill: none; /* Material sets fill: currentcolor on header SVGs */
+}
+.rq-logo__lines {
+  stroke: var(--rq-fg-faint);
+}
+.rq-logo__hub {
+  fill: var(--rq-primary);
+}
+.rq-logo__node {
+  fill: var(--rq-fg);
+}
+
+/* ---- Header and tabs ----------------------------------------------------------------- */
+.md-header {
+  border-bottom: 1px solid var(--rq-line);
+  box-shadow: none;
+}
+.md-header--shadow {
+  box-shadow: none;
+}
+.md-header__title {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.md-header__button.md-logo {
+  padding: 0.3rem;
+  margin: 0.2rem 0.1rem 0.2rem 0.2rem;
+}
+
+.md-tabs {
+  border-bottom: 1px solid var(--rq-line);
+}
+.md-tabs__link {
+  color: var(--rq-fg-muted);
+  opacity: 1;
+  font-size: 0.7rem;
+}
+.md-tabs__item--active .md-tabs__link,
+.md-tabs__link:is(:hover, :focus) {
+  color: var(--rq-fg);
+}
+
+/* Search field: a bordered control, like the dashboard's inputs. */
+@media screen and (min-width: 60em) {
+  .md-search__form {
+    background-color: var(--rq-panel);
+    border: 1px solid var(--rq-line);
+    border-radius: 0.3rem;
+  }
+  .md-search__form:hover {
+    background-color: var(--rq-panel);
+    border-color: var(--rq-line-strong);
+  }
+  [data-md-toggle="search"]:checked ~ .md-header .md-search__form {
+    background-color: var(--rq-overlay);
+    border-color: var(--rq-line-strong);
+    border-radius: 0.3rem 0.3rem 0 0;
+  }
+  .md-search__output {
+    border: 1px solid var(--rq-line-strong);
+    border-top: 0;
+    border-radius: 0 0 0.3rem 0.3rem;
+  }
+}
+.md-search__input {
+  color: var(--rq-fg);
+}
+.md-search__input::placeholder,
+.md-search__icon {
+  color: var(--rq-fg-subtle);
+}
+.md-search__scrollwrap,
+.md-search-result,
+.md-search-result__meta {
+  background-color: var(--rq-overlay);
+}
+.md-search-result__meta {
+  color: var(--rq-fg-subtle);
+}
+.md-search-result__link:is(:hover, :focus),
+.md-search-result__link[data-md-state="active"] {
+  background-color: var(--rq-hover);
+}
+.md-search-result mark {
+  color: var(--rq-link);
+  background: none;
+}
+
+/* ---- Navigation ---------------------------------------------------------------------- */
+.md-nav {
+  font-size: 0.68rem;
+}
+.md-nav__link {
+  color: var(--rq-fg-muted);
+}
+.md-nav__link:is(:hover, :focus) {
+  color: var(--rq-fg);
+}
+.md-nav__item .md-nav__link--active,
+.md-nav__item .md-nav__link--active code {
+  color: var(--rq-link);
+}
+/* Section titles in the sidebar. */
+.md-nav__item--section > .md-nav__link,
+.md-nav--primary > .md-nav__list > .md-nav__item--section > .md-nav__link {
+  color: var(--rq-fg);
+  font-weight: 600;
+}
+.md-nav__title {
+  color: var(--rq-fg);
+  font-weight: 600;
+}
+@media screen and (min-width: 76.25em) {
+  .md-nav--secondary .md-nav__title,
+  .md-nav--primary .md-nav__title[for="__drawer"] {
+    background: var(--rq-canvas);
+    box-shadow: none;
+  }
+}
+/* Table of contents: current heading marked by the link colour only. */
+.md-nav--secondary .md-nav__link--passed {
+  color: var(--rq-fg-subtle);
+}
+.md-nav--secondary .md-nav__link--active {
+  color: var(--rq-link);
+}
+
+/* Mobile drawer. */
+@media screen and (max-width: 76.2344em) {
+  .md-nav--primary .md-nav__title {
+    background-color: var(--rq-panel);
+    color: var(--rq-fg);
+    border-bottom: 1px solid var(--rq-line);
+  }
+  .md-nav--primary .md-nav__title .md-nav__icon {
+    color: var(--rq-fg-muted);
+  }
+  .md-nav--primary .md-nav__item {
+    border-top: 1px solid var(--rq-line-subtle);
+  }
+  .md-sidebar--primary {
+    background-color: var(--rq-canvas);
+    border-right: 1px solid var(--rq-line);
+  }
+}
+
+/* ---- Typography ---------------------------------------------------------------------- */
+.md-typeset {
+  font-size: 0.75rem; /* 15px: long-form reading, one step above the dashboard's 14px */
+  line-height: 1.65;
+}
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+  color: var(--rq-fg);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.md-typeset h1 {
+  font-size: 1.7rem;
+  line-height: 1.2;
+  margin-bottom: 0.9rem;
+}
+.md-typeset h2 {
+  font-size: 1.2rem;
+  margin-top: 2.2rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--rq-line-subtle);
+}
+/* The first h2 right after the intro needs no rule above it on short pages. */
+.md-typeset h1 + h2 {
+  border-top: 0;
+  padding-top: 0;
+}
+.md-typeset h3 {
+  font-size: 0.95rem;
+  margin-top: 1.6rem;
+}
+.md-typeset h4 {
+  font-size: 0.8rem;
+}
+.md-typeset a {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 0.2em;
+  transition: color 0.12s, text-decoration-color 0.12s;
+}
+.md-typeset a:is(:hover, :focus) {
+  color: var(--rq-link-hover);
+  text-decoration-color: currentcolor;
+}
+.md-typeset .headerlink {
+  color: var(--rq-fg-faint);
+}
+.md-typeset .headerlink:is(:hover, :focus),
+.md-typeset :target > .headerlink {
+  color: var(--rq-link);
+}
+.md-typeset hr {
+  border-bottom: 1px solid var(--rq-line);
+}
+.md-typeset strong {
+  font-weight: 600;
+}
+.md-typeset blockquote {
+  border-left: 2px solid var(--rq-line-strong);
+  color: var(--rq-fg-muted);
+}
+
+/* ---- Code ---------------------------------------------------------------------------- */
+.md-typeset code {
+  font-size: 0.86em;
+  border-radius: 0.2rem;
+  font-variant-ligatures: none;
+}
+/* Inline code: a raised chip with a hairline. */
+.md-typeset :not(pre) > code {
+  background-color: var(--rq-raised);
+  border: 1px solid var(--rq-line-subtle);
+  padding: 0.05em 0.35em;
+  box-shadow: none;
+}
+.md-typeset a > code {
+  color: inherit;
+}
+/* Code blocks: a flat panel. */
+.md-typeset pre > code {
+  border: 1px solid var(--rq-line);
+  border-radius: 0.4rem;
+  font-size: 0.68rem;
+  line-height: 1.6;
+  padding: 0.85em 1.1em;
+  scrollbar-color: var(--rq-line-strong) transparent;
+}
+.md-typeset .highlight > .filename {
+  background-color: var(--rq-raised);
+  border: 1px solid var(--rq-line);
+  border-bottom: 0;
+  border-radius: 0.4rem 0.4rem 0 0;
+  color: var(--rq-fg-muted);
+  font-family: var(--md-code-font-family);
+  font-size: 0.64rem;
+  font-weight: 500;
+  margin: 0;
+  padding: 0.5em 1.1em;
+}
+.md-typeset .highlight > .filename + pre > code {
+  border-radius: 0 0 0.4rem 0.4rem;
+}
+.md-typeset .md-code__button,
+.md-clipboard {
+  color: var(--rq-fg-faint);
+}
+.md-typeset .md-code__button:is(:hover, :focus),
+.md-clipboard:is(:hover, :focus) {
+  color: var(--rq-link);
+}
+.md-typeset kbd {
+  box-shadow: none;
+  border: 1px solid var(--rq-line-strong);
+  border-bottom-width: 2px;
+  border-radius: 0.2rem;
+}
+
+/* ---- Tables -------------------------------------------------------------------------- */
+.md-typeset table:not([class]) {
+  border: 1px solid var(--rq-line);
+  border-radius: 0.4rem;
+  box-shadow: none;
+  font-size: 0.68rem;
+}
+.md-typeset table:not([class]) th {
+  background-color: var(--rq-panel);
+  color: var(--rq-fg-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.md-typeset table:not([class]) th,
+.md-typeset table:not([class]) td {
+  border-top: 0;
+  border-bottom: 1px solid var(--rq-line-subtle);
+  padding: 0.6em 0.9em;
+}
+.md-typeset table:not([class]) tr:last-child td {
+  border-bottom: 0;
+}
+.md-typeset table:not([class]) tbody tr:hover {
+  background-color: var(--rq-hover);
+  box-shadow: none;
+}
+/* The first column of a reference table is usually an identifier: keep it on one line. */
+.md-typeset table:not([class]) td:first-child code {
+  white-space: nowrap;
+}
+
+/* ---- Admonitions --------------------------------------------------------------------- */
+.md-typeset .admonition,
+.md-typeset details {
+  --rq-admonition: var(--rq-primary);
+  background-color: var(--rq-panel);
+  border: 1px solid var(--rq-line);
+  border-left: 2px solid var(--rq-admonition);
+  border-radius: 0.3rem;
+  box-shadow: none;
+  font-size: 0.72rem;
+}
+/* Material colours the whole border per type: keep a hairline and a coloured left edge. */
+.md-typeset :is(.admonition, details)[class],
+.md-typeset :is(.admonition, details)[class]:focus-within {
+  border-color: var(--rq-line);
+  border-left-color: var(--rq-admonition);
+  box-shadow: none;
+}
+.md-typeset .admonition-title,
+.md-typeset summary {
+  background-color: transparent !important;
+  color: var(--rq-fg);
+  font-weight: 600;
+  padding-top: 0.6rem;
+}
+.md-typeset .admonition-title::before,
+.md-typeset summary::before {
+  background-color: var(--rq-admonition) !important;
+  top: 0.75rem;
+}
+.md-typeset .admonition > :last-child,
+.md-typeset details > :last-child {
+  margin-bottom: 0.7rem;
+}
+.md-typeset :is(.admonition, details):is(.tip, .hint, .success) {
+  --rq-admonition: var(--rq-success);
+}
+.md-typeset :is(.admonition, details):is(.warning, .caution, .attention) {
+  --rq-admonition: var(--rq-warning);
+}
+.md-typeset :is(.admonition, details):is(.danger, .error, .failure, .bug) {
+  --rq-admonition: var(--rq-danger);
+}
+
+/* ---- Content tabs -------------------------------------------------------------------- */
+.md-typeset .tabbed-labels {
+  box-shadow: 0 -1px var(--rq-line) inset;
+}
+.md-typeset .tabbed-labels > label {
+  color: var(--rq-fg-muted);
+  font-size: 0.68rem;
+  font-weight: 500;
+}
+.md-typeset .tabbed-labels > label:hover {
+  color: var(--rq-fg);
+}
+.md-typeset .tabbed-set > input:checked + label,
+.md-typeset .tabbed-labels > label[for]:is(:checked, .tabbed-checked) {
+  color: var(--rq-link);
+}
+.js .md-typeset .tabbed-labels::before {
+  background: var(--rq-link);
+}
+
+/* ---- Buttons ------------------------------------------------------------------------- */
+.md-typeset .md-button {
+  border: 1px solid var(--rq-line-strong);
+  border-radius: 0.3rem;
+  color: var(--rq-fg);
+  font-size: 0.7rem;
+  font-weight: 500;
+  padding: 0.5em 1.1em;
+  text-decoration: none;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+.md-typeset .md-button:is(:hover, :focus) {
+  background-color: var(--rq-hover);
+  border-color: var(--rq-fg-subtle);
+  color: var(--rq-fg);
+  text-decoration: none;
+}
+.md-typeset .md-button--primary {
+  background-color: var(--rq-primary-strong);
+  border-color: var(--rq-primary-strong);
+  color: #ffffff;
+}
+.md-typeset .md-button--primary:is(:hover, :focus) {
+  background-color: var(--rq-primary);
+  border-color: var(--rq-primary);
+  color: #ffffff;
+}
+
+/* ---- Grid cards ---------------------------------------------------------------------- */
+.md-typeset .grid.cards > :is(ul, ol) > li,
+.md-typeset .grid > .card {
+  background-color: var(--rq-panel);
+  border: 1px solid var(--rq-line);
+  border-radius: 0.4rem;
+  transition: border-color 0.12s;
+}
+.md-typeset .grid.cards > :is(ul, ol) > li:is(:hover, :focus-within),
+.md-typeset .grid > .card:is(:hover, :focus-within) {
+  border-color: var(--rq-line-strong);
+  box-shadow: none;
+}
+.md-typeset .grid.cards > :is(ul, ol) > li > hr {
+  border-bottom-color: var(--rq-line-subtle);
+  margin: 0.6rem 0;
+}
+
+/* ---- Mermaid ------------------------------------------------------------------------- */
+.md-typeset .mermaid {
+  background-color: var(--rq-panel);
+  border: 1px solid var(--rq-line);
+  border-radius: 0.4rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+/* ---- Footer -------------------------------------------------------------------------- */
+.md-footer {
+  border-top: 1px solid var(--rq-line);
+}
+.md-footer__link {
+  opacity: 1;
+}
+.md-footer__direction {
+  color: var(--rq-fg-subtle);
+}
+.md-footer-meta {
+  border-top: 1px solid var(--rq-line-subtle);
+}
+.md-footer-meta__inner {
+  align-items: center;
+}
+.md-copyright,
+.md-social__link {
+  color: var(--rq-fg-subtle);
+}
+.md-social__link:is(:hover, :focus) svg {
+  fill: var(--rq-fg);
+}
+
+/* ---- Misc ---------------------------------------------------------------------------- */
+.md-top {
+  background-color: var(--rq-overlay);
+  border: 1px solid var(--rq-line-strong);
+  color: var(--rq-fg-muted);
+  box-shadow: var(--rq-shadow-overlay);
+}
+.md-top:is(:hover, :focus) {
+  background-color: var(--rq-raised);
+  color: var(--rq-fg);
+}
+.md-content__button {
+  color: var(--rq-fg-faint);
+}
+.md-typeset .md-content__button:is(:hover, :focus) {
+  color: var(--rq-link);
+}
+.md-dialog {
+  background-color: var(--rq-overlay);
+  border: 1px solid var(--rq-line-strong);
+  color: var(--rq-fg);
+}
+.md-typeset figure figcaption {
+  color: var(--rq-fg-subtle);
+  font-size: 0.66rem;
+}
+.md-typeset img {
+  border-radius: 0.4rem;
+}
+
+/* A "what you need / what you get" strip at the top of tutorials. */
+.md-typeset .rq-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0;
+  margin: 1.2rem 0 1.6rem;
+  border: 1px solid var(--rq-line);
+  border-radius: 0.4rem;
+  background-color: var(--rq-panel);
+}
+.md-typeset .rq-facts > div {
+  padding: 0.7rem 0.9rem;
+  border-left: 1px solid var(--rq-line-subtle);
+}
+.md-typeset .rq-facts > div:first-child {
+  border-left: 0;
+}
+.md-typeset .rq-facts dt,
+.md-typeset .rq-facts .rq-facts__label {
+  color: var(--rq-fg-subtle);
+  font-size: 0.62rem;
+  margin-bottom: 0.15rem;
+}
+.md-typeset .rq-facts .rq-facts__value {
+  color: var(--rq-fg);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+@media screen and (max-width: 44.9844em) {
+  .md-typeset .rq-facts > div {
+    border-left: 0;
+    border-top: 1px solid var(--rq-line-subtle);
+  }
+  .md-typeset .rq-facts > div:first-child {
+    border-top: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}

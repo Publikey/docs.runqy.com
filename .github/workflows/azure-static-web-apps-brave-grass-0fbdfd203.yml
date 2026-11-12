@@ -30,8 +30,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # --strict: a broken link, anchor, nav entry or redirect target fails the build.
       - name: Build MkDocs site
-        run: mkdocs build
+        run: mkdocs build --strict
+        env:
+          DISABLE_MKDOCS_2_WARNING: "true"
+
+      # runqy.com copies these two files to its root; its deploy fails without them.
+      - name: Check llms.txt outputs
+        run: test -s site/llms.txt && test -s site/llms-full.txt
 
   publish:
     needs: build

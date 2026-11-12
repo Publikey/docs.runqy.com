@@ -1,418 +1,194 @@
 ---
-title: "Python Task Queue Quickstart with Docker"
-description: "Run your first Runqy task in minutes: start Redis and the server with Docker Compose, write a Python task with two decorators, and enqueue a job."
+title: "Quickstart"
+description: "Start a runqy server, a worker and Redis with Docker Compose, enqueue a task and read its result."
 ---
 
-# Quick Start
+# Quickstart
 
-This guide walks you through setting up a local runqy environment with working examples.
+Start a complete runqy setup on your machine, send a task to a worker and read its result.
+The tasks are two small examples shipped with runqy; the [next page](first-task.md) replaces
+them with your own code.
 
-## Prerequisites
+<div class="rq-facts" markdown>
+<div><div class="rq-facts__label">Time</div><div class="rq-facts__value">About 5 minutes</div></div>
+<div><div class="rq-facts__label">You need</div><div class="rq-facts__value">Docker with Compose, git, curl</div></div>
+<div><div class="rq-facts__label">You get</div><div class="rq-facts__value">Server, worker, Redis and PostgreSQL on localhost</div></div>
+</div>
 
-- Docker (for Redis, or use Docker Compose for full stack)
-- **One of:**
-    - Pre-built binaries (recommended)
-    - Go 1.24+ (to build from source)
+## Start the stack
 
-!!! note "No database required for development"
-    SQLite is embedded in the server for development. PostgreSQL is only needed for production.
-
-## Choose Your Installation Method
-
-=== "Quick Install (Recommended)"
-
-    The fastest way to get started:
-
-    **Linux/macOS:**
-    ```bash
-    # Install server
-    curl -fsSL https://raw.githubusercontent.com/publikey/runqy/main/install.sh | sh
-
-    # Install worker
-    curl -fsSL https://raw.githubusercontent.com/publikey/runqy-worker/main/install.sh | sh
-    ```
-
-    **Windows (PowerShell):**
-    ```powershell
-    # Install server
-    iwr https://raw.githubusercontent.com/publikey/runqy/main/install.ps1 -useb | iex
-
-    # Install worker
-    iwr https://raw.githubusercontent.com/publikey/runqy-worker/main/install.ps1 -useb | iex
-    ```
-
-=== "Docker Compose Quickstart (Recommended)"
-
-    Run the full stack without cloning the repo. The compose file mounts the example queue config from `./examples/`, so download both:
-
-    ```bash
-    mkdir -p examples
-    curl -fsSL -o examples/quickstart.yaml https://raw.githubusercontent.com/Publikey/runqy/main/examples/quickstart.yaml
-    curl -fsSLO https://raw.githubusercontent.com/Publikey/runqy/main/docker-compose.quickstart.yml
-    docker compose -f docker-compose.quickstart.yml up -d
-    ```
-
-    This starts Redis, PostgreSQL, server, and worker, with the example queues already loaded. Skip to [Step 5](#5-enqueue-a-task).
-
-=== "Docker Compose (Full Repo)"
-
-    Clone the repo and run the full stack:
-
-    ```bash
-    git clone https://github.com/Publikey/runqy.git
-    cd runqy
-    docker-compose up -d
-    ```
-
-    This starts Redis, PostgreSQL, server, and worker. Skip to [Step 5](#5-enqueue-a-task).
-
-=== "From Source"
-
-    Build from source:
-
-    ```bash
-    git clone https://github.com/Publikey/runqy.git
-    git clone https://github.com/Publikey/runqy-worker.git
-
-    # Build server
-    cd runqy/app && go build -o runqy .
-
-    # Build worker
-    cd ../runqy-worker && go build -o runqy-worker ./cmd/worker
-    ```
-
-For more installation options, see the [Installation Guide](installation.md).
-
-## 1. Start Redis
+Clone the runqy repository and start the Compose file at its root:
 
 ```bash
-docker run -d --name redis -p 6379:6379 redis:7-alpine
+git clone https://github.com/Publikey/runqy.git
+cd runqy
+docker compose -f docker-compose.quickstart.yml up -d
 ```
 
-!!! warning "Redis 8.x is not supported"
-    runqy uses [asynq](https://github.com/hibiken/asynq) which relies on Lua scripts that are incompatible with Redis 8.x. Use **Redis 7.x** (`redis:7-alpine`). The Docker Compose files already pin this version.
+This starts four containers:
 
-## 2. Start the Server
+| Container | Role |
+|-----------|------|
+| `runqy-server` | The API, the CLI and the dashboard, on <http://localhost:3000> |
+| `runqy-worker` | One worker, listening on the two example queues |
+| `redis` | Holds the tasks and their results |
+| `postgres` | Holds the queue configs |
 
-=== "Pre-built Binary"
+The server loads two queues from [`examples/quickstart.yaml`](https://github.com/Publikey/runqy/blob/main/examples/quickstart.yaml).
+Each queue config names a git repository, a directory in it and a command. The worker asks the
+server what to run, clones that code, installs its requirements and starts it. Nothing about
+the tasks is built into the worker image.
 
-    === "Linux/Mac"
+Wait until the worker reports that it is running (a few seconds once the images are pulled):
 
-        ```bash
-        export REDIS_HOST=localhost
-        export REDIS_PORT=6379
-        export REDIS_PASSWORD=""
-        export RUNQY_API_KEY=dev-api-key
-        runqy serve --sqlite
-        ```
-
-    === "Windows (PowerShell)"
-
-        ```powershell
-        $env:REDIS_HOST = "localhost"
-        $env:REDIS_PORT = "6379"
-        $env:REDIS_PASSWORD = ""
-        $env:RUNQY_API_KEY = "dev-api-key"
-        runqy serve --sqlite
-        ```
-
-=== "From Source"
-
-    === "Linux/Mac"
-
-        ```bash
-        cd runqy/app
-        export REDIS_HOST=localhost
-        export REDIS_PORT=6379
-        export REDIS_PASSWORD=""
-        export RUNQY_API_KEY=dev-api-key
-        go run . serve --sqlite
-        ```
-
-    === "Windows (PowerShell)"
-
-        ```powershell
-        cd runqy/app
-        $env:REDIS_HOST = "localhost"
-        $env:REDIS_PORT = "6379"
-        $env:REDIS_PASSWORD = ""
-        $env:RUNQY_API_KEY = "dev-api-key"
-        go run . serve --sqlite
-        ```
-
-The server starts on port 3000 by default.
-
-!!! info "API Authentication"
-    The server reads the API key from the `RUNQY_API_KEY` environment variable. HTTP clients (curl, SDKs) must send it as an `Authorization: Bearer {key}` header.
-
-## 3. Deploy the Example Queues
-
-In a new terminal:
-
-=== "Pre-built Binary"
-
-    === "Linux/Mac"
-
-        ```bash
-        # Download example config
-        curl -fsSL https://raw.githubusercontent.com/Publikey/runqy/main/examples/quickstart.yaml -o quickstart.yaml
-
-        runqy login -s http://localhost:3000 -k dev-api-key
-        runqy config create -f quickstart.yaml
-        ```
-
-    === "Windows (PowerShell)"
-
-        ```powershell
-        # Download example config
-        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Publikey/runqy/main/examples/quickstart.yaml" -OutFile "quickstart.yaml"
-
-        runqy login -s http://localhost:3000 -k dev-api-key
-        runqy config create -f quickstart.yaml
-        ```
-
-=== "From Source"
-
-    === "Linux/Mac"
-
-        ```bash
-        cd runqy/app
-        go build -o runqy .
-        ./runqy login -s http://localhost:3000 -k dev-api-key config create -f ../examples/quickstart.yaml
-        ```
-
-    === "Windows (PowerShell)"
-
-        ```powershell
-        cd runqy/app
-        go build -o runqy.exe .
-        .\runqy.exe login -s http://localhost:3000 -k dev-api-key
-        .\runqy.exe config create -f ..\examples\quickstart.yaml
-        ```
-
-This deploys two example queues:
-
-| Queue | Mode | Description |
-|-------|------|-------------|
-| `quickstart-oneshot` | one_shot | Spawns a new Python process per task |
-| `quickstart-longrunning` | long_running | Keeps Python process alive between tasks |
-
-!!! note "Sub-queue naming: the `.default` suffix"
-    When a queue has no explicit sub-queues defined, runqy automatically appends `.default`. So `quickstart-oneshot` becomes `quickstart-oneshot.default` at runtime. You'll see this suffix in worker logs, Redis keys, and API responses. When enqueueing, you can use either the short name (`quickstart-oneshot`) or the full name (`quickstart-oneshot.default`).
-
-## 4. Start a Worker
-
-In a new terminal:
-
-=== "Pre-built Binary"
-
-    === "Linux/Mac"
-
-        ```bash
-        # Download example config
-        curl -fsSL https://raw.githubusercontent.com/publikey/runqy-worker/main/config.yml.example -o config.yml
-
-        # Start worker
-        runqy-worker -config config.yml
-        ```
-
-    === "Windows (PowerShell)"
-
-        ```powershell
-        # Download example config
-        Invoke-WebRequest -Uri "https://raw.githubusercontent.com/publikey/runqy-worker/main/config.yml.example" -OutFile "config.yml"
-
-        # Start worker
-        runqy-worker -config config.yml
-        ```
-
-=== "From Source"
-
-    === "Linux/Mac"
-
-        ```bash
-        cd runqy-worker
-        cp config.yml.example config.yml
-        go run ./cmd/worker
-        ```
-
-    === "Windows (PowerShell)"
-
-        ```powershell
-        cd runqy-worker
-        Copy-Item config.yml.example config.yml
-        go run ./cmd/worker
-        ```
-
-The downloaded config is pre-configured for the quickstart (no changes needed):
-
-```yaml
-server:
-  url: "http://localhost:3000"
-  api_key: "dev-api-key"
-
-worker:
-  queues:
-    - "quickstart-oneshot.default"
-    - "quickstart-longrunning.default"
+```bash
+docker compose -f docker-compose.quickstart.yml logs -f runqy-worker
 ```
 
-The worker will:
+```text
+[INFO] Queues: quickstart-longrunning.default (5), quickstart-oneshot.default (5)
+[INFO] Worker running. Press Ctrl+C to stop.
+```
 
-1. Register with the server
-2. Clone the example task code from the runqy repo
-3. Set up a Python virtual environment
-4. Start the Python process
-5. The worker is now ready to process tasks
+Press ++ctrl+c++ to leave the logs; the containers keep running.
 
-## 5. Enqueue a Task
+## Enqueue a task
 
-In a new terminal:
+Send a task to the `quickstart-oneshot` queue. `data` is the payload your task function
+receives; this example task expects an `operation` and a value, also named `data`.
 
-=== "Linux/Mac"
+```bash
+curl -s -X POST http://localhost:3000/queue/add \
+  -H "Authorization: Bearer dev-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{"queue": "quickstart-oneshot", "data": {"operation": "uppercase", "data": "hello world"}}'
+```
 
-    ```bash
-    curl -X POST http://localhost:3000/queue/add \
-      -H "Authorization: Bearer dev-api-key" \
-      -H "Content-Type: application/json" \
-      -d '{
-        "queue": "quickstart-oneshot.default",
-        "timeout": 60,
-        "data": {"operation": "uppercase", "data": "hello world"}
-      }'
-    ```
-
-=== "Windows (PowerShell)"
-
-    ```powershell
-    curl.exe -X POST http://localhost:3000/queue/add `
-      -H "Authorization: Bearer dev-api-key" `
-      -H "Content-Type: application/json" `
-      -d '{\"queue\": \"quickstart-oneshot.default\", \"timeout\": 60, \"data\": {\"operation\": \"uppercase\", \"data\": \"hello world\"}}'
-    ```
-
-Response:
+The response describes the task. Keep its `id`:
 
 ```json
 {
   "info": {
-    "id": "abc123...",
+    "id": "66d9a415-0cd7-4fab-bddf-9100b1bd1ab1",
     "state": "pending",
     "queue": "quickstart-oneshot.default",
-    ...
+    "max_retry": 3
   },
-  "data": {...}
+  "data": {"operation": "uppercase", "data": "hello world"}
 }
 ```
 
-!!! tip "Task ID"
-    Use the `id` from the response to check the result in the next step.
+The response has more fields than shown here. The queue is named
+`quickstart-oneshot.default` because every queue has at least one sub-queue; see
+[Queues and priorities](../concepts/queues.md).
 
-!!! note "Queue name shorthand"
-    You can omit the `.default` suffix when enqueueing. For example, `quickstart-oneshot` automatically resolves to `quickstart-oneshot.default`.
+## Read the result
 
-??? info "Request format: nested vs flat"
-    The `/queue/add` endpoint accepts two formats:
+Ask for the task by id. With `?wait=true` the server holds the request until the task has
+finished:
 
-    **Nested format** (wraps payload in `"data"`):
-    ```json
-    {"queue": "myqueue", "timeout": 60, "data": {"operation": "uppercase", "data": "hello"}}
-    ```
-
-    **Flat format** (all extra fields become the payload):
-    ```json
-    {"queue": "myqueue", "timeout": 60, "operation": "uppercase", "data": "hello"}
-    ```
-
-    Both are equivalent. In the nested format, the `"data"` wrapper contains your task payload as-is. Note that in the quickstart example, the inner `"data"` key is a task input field (not the wrapper) — this is valid but can look confusing at first glance.
-
-### Try Long-Running Mode
-
-To try long-running mode, just enqueue to `quickstart-longrunning.default` — the worker already listens on both queues.
-
-## 6. Check the Result
-
-Replace `{id}` with the task ID from the previous step:
-
-=== "Linux/Mac"
-
-    ```bash
-    curl http://localhost:3000/queue/{id}
-    ```
-
-=== "Windows (PowerShell)"
-
-    ```powershell
-    curl.exe http://localhost:3000/queue/{id}
-    ```
-
-Response:
+```bash
+curl -s "http://localhost:3000/queue/<task-id>?wait=true"
+```
 
 ```json
 {
-  "info": {
+  "Info": {
+    "id": "66d9a415-0cd7-4fab-bddf-9100b1bd1ab1",
     "state": "completed",
     "queue": "quickstart-oneshot.default",
-    "result": {"result": "HELLO WORLD"}
+    "CompletedAt": "2026-11-12T15:48:50Z",
+    "Result": "{\"result\": \"HELLO WORLD\"}"
   }
 }
 ```
 
-## 7. Monitor
+`Result` is what the task function returned, as a JSON string. Again, the real response has
+more fields; [Getting results](../guides/result-delivery.md) describes them.
 
-Visit [http://localhost:3000/monitoring/](http://localhost:3000/monitoring/) to see the web dashboard.
+## Keep a process alive between tasks
 
-## Example Task Code
+The first queue started a new Python process for the task and stopped it afterwards. The
+second queue, `quickstart-longrunning`, keeps one process running: it prepares its resources
+once, then handles every task. This is the mode to use for a model that takes time to load.
 
-The quickstart uses example tasks from `runqy/examples/`:
+Send two tasks and look at `calls` in the results:
 
-=== "One-Shot Mode"
+```bash
+curl -s -X POST http://localhost:3000/queue/add \
+  -H "Authorization: Bearer dev-api-key" \
+  -H "Content-Type: application/json" \
+  -d '{"queue": "quickstart-longrunning", "data": {"operation": "double", "data": 21}}'
+```
 
-    ```python title="examples/quickstart-oneshot/main.py"
-    from runqy_python import task, run_once
+```json
+{"result": 42, "calls": 1}
+```
 
-    @task
-    def process(payload: dict) -> dict:
-        operation = payload.get("operation", "echo")
-        data = payload.get("data")
+The second task returns `"calls": 2`: the same process handled both. The code is in
+[`examples/quickstart-longrunning/main.py`](https://github.com/Publikey/runqy/blob/main/examples/quickstart-longrunning/main.py).
 
-        if operation == "echo":
-            return {"result": data}
-        elif operation == "uppercase":
-            return {"result": data.upper() if isinstance(data, str) else data}
-        elif operation == "double":
-            return {"result": data * 2 if isinstance(data, (int, float)) else data}
-        else:
-            return {"error": f"Unknown operation: {operation}"}
+## Look around
 
-    if __name__ == "__main__":
-        run_once()
-    ```
+**The dashboard** is at <http://localhost:3000/monitoring/>. The first visit asks you to create
+the administrator account. You then see the queues, the worker and its logs, and every task
+with its payload and result.
 
-=== "Long-Running Mode"
+**The CLI** is in the server container:
 
-    ```python title="examples/quickstart-longrunning/main.py"
-    from runqy_python import task, load, run
+```bash
+docker compose -f docker-compose.quickstart.yml exec runqy-server runqy queue list
+```
 
-    @load
-    def setup():
-        # Initialize resources once at startup
-        return {"processor": SimpleProcessor()}
+```text
+QUEUE                           PENDING  ACTIVE  SCHEDULED  RETRY  ARCHIVED  COMPLETED  PAUSED
+quickstart-oneshot.default      0        0       0          0      0         1          no
+quickstart-longrunning.default  0        0       0          0      0         2          no
+```
 
-    @task
-    def process(payload: dict, ctx: dict) -> dict:
-        processor = ctx["processor"]
-        operation = payload.get("operation", "echo")
-        data = payload.get("data")
-        result = processor.process(operation, data)
-        return {"result": result, "calls": processor.call_count}
+```bash
+docker compose -f docker-compose.quickstart.yml exec runqy-server runqy worker list
+```
 
-    if __name__ == "__main__":
-        run()
-    ```
+```text
+WORKER_ID       STATUS   VERSION  QUEUES                          CONCURRENCY  LAST_BEAT  STALE
+12f7363acae0:1  running  0.4.2    quickstart-longrunning.defa...  1            3s         no
+```
 
-## Next Steps
+## What just happened
 
-- [Architecture Overview](architecture.md) — Understand how the components work together
-- [Python SDK](../python-sdk/index.md) — Write your own task handlers
-- [Configuration](../server/configuration.md) — Configure the server for production
+```mermaid
+sequenceDiagram
+    participant You
+    participant Server as runqy server
+    participant Redis
+    participant Worker as runqy worker
+    participant Task as Task process (Python)
+    Worker->>Server: register (API key, queues)
+    Server-->>Worker: Redis credentials, git repo, startup command
+    Worker->>Task: clone the code, install requirements, start
+    You->>Server: POST /queue/add
+    Server->>Redis: store the task
+    Worker->>Redis: take the task
+    Worker->>Task: payload
+    Task-->>Worker: result
+    Worker->>Redis: store the result
+    You->>Server: GET /queue/<task-id>?wait=true
+    Server-->>You: result
+```
+
+## Stop and clean up
+
+```bash
+docker compose -f docker-compose.quickstart.yml down -v
+```
+
+`-v` also removes the volumes: the tasks, the queue configs and the dashboard account.
+
+## Next steps
+
+- [Your first task](first-task.md): run your own code from your own repository.
+- [Architecture](../concepts/architecture.md): how the server, the workers and your code fit
+  together.
+- [Running without Docker](../guides/local-development.md): the same setup from the binaries.
+- [Troubleshooting](../troubleshooting.md) if a step did not behave as described.

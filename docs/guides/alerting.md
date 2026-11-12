@@ -3,10 +3,10 @@ title: "Email Alerts for Queues and Workers"
 description: "Get emailed when a runqy queue has no workers, backs up, has an unhealthy worker or fails to autoscale. SMTP or SendGrid, with per-queue overrides."
 ---
 
-# Email Alerts
+# Email alerts
 
 runqy watches your queues and **emails you when something needs attention**: a queue with
-pending jobs and no worker, jobs waiting too long, a degraded worker, a failed autoscaling
+pending tasks and no worker, tasks waiting too long, a degraded worker, a failed autoscaling
 attempt. Notifications go through **SMTP** or **SendGrid**.
 
 Alerts are configured in two layers:
@@ -116,10 +116,10 @@ the stored value.
 
 | Type | Fields | Fires when |
 |------|--------|------------|
-| `no_workers` | `when_idle` | Jobs are pending and **no live worker** serves the queue. With `when_idle: true`, also when nothing is pending. |
-| `latency` | `max_latency` | The **oldest pending job** has waited longer than `max_latency` |
-| `pending` | `threshold` | More than `threshold` jobs are pending |
-| `worker_unhealthy` | — | A worker serving the queue reports `healthy: false`: its Python process is down (crashed, being restarted by auto-recovery, or [degraded](../worker/configuration.md#degraded-state) after repeated crashes). Waits `for: 1m` by default, so a worker stopping or a quick automatic restart does not alert; set `for: 0s` to alert at once. |
+| `no_workers` | `when_idle` | Tasks are pending and **no live worker** serves the queue. With `when_idle: true`, also when nothing is pending. |
+| `latency` | `max_latency` | The **oldest pending task** has waited longer than `max_latency` |
+| `pending` | `threshold` | More than `threshold` tasks are pending |
+| `worker_unhealthy` | — | A worker serving the queue reports `healthy: false`: its Python process is down (crashed, being restarted by auto-recovery, or [degraded](../concepts/workers.md#crash-recovery) after repeated crashes). Waits `for: 1m` by default, so a worker stopping or a quick automatic restart does not alert; set `for: 0s` to alert at once. |
 | `autoscale_failure` | — | The [autoscaler](autoscaling.md) failed to provision an instance, is missing a prerequisite, or destroyed an instance that never became ready or lost its worker |
 
 Every rule except `autoscale_failure` accepts two delays:
@@ -139,7 +139,7 @@ rules:
 ```
 
 `resolve_after` keeps a value that hovers around its threshold from sending a `FIRING` /
-`RESOLVED` pair at every swing. With a `latency` rule at 20 minutes, the oldest job is picked up
+`RESOLVED` pair at every swing. With a `latency` rule at 20 minutes, the oldest task is picked up
 (condition clear) and the next one crosses 20 minutes a moment later (condition true again):
 that is one alert, which resolves once the latency has stayed under the threshold for 5 minutes.
 The `RESOLVED` email reports how long the alert really lasted, without that delay.
@@ -152,7 +152,7 @@ rules:
 ```
 
 !!! info "Paused queues are skipped"
-    A paused queue is expected to accumulate jobs, so no rule is evaluated for it. An alert
+    A paused queue is expected to accumulate tasks, so no rule is evaluated for it. An alert
     that was firing when the queue got paused (or muted, removed, or its rule removed) is
     closed with a `RESOLVED` email giving the reason, so no alert is left open.
 
@@ -227,7 +227,7 @@ runqy alerts status --history 100
 runqy alerts test            # test email with the saved settings
 ```
 
-```
+```text
 Alerting: enabled
 Last evaluation: 2026-10-14T11:58:21+02:00
 
@@ -235,7 +235,7 @@ STATE   QUEUE      RULE        SINCE  DETAILS
 FIRING  inference  no_workers  2m10s  no live worker is serving the queue (3 job(s) pending)
 ```
 
-The REST endpoints (admin API key) are listed in the [API Reference](../server/api.md#alert-endpoints).
+The REST endpoints (admin API key) are listed in the [API Reference](../reference/rest-api.md#alerts).
 
 ## Prometheus alternative
 

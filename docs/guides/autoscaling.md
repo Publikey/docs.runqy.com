@@ -3,7 +3,7 @@ title: "GPU Autoscaling on RunPod and Vast.ai"
 description: "Let runqy rent GPU workers on RunPod or Vast.ai when a queue has work and destroy them when they go idle: triggers, providers, safety rules and setup."
 ---
 
-# GPU Autoscaling
+# GPU autoscaling
 
 runqy can **provision GPU workers on demand** for a queue and **destroy them when they are no
 longer needed**. Instances are rented from a cloud provider (RunPod, Vast.ai), boot the
@@ -18,7 +18,7 @@ sequenceDiagram
     participant S as runqy server (autoscaler)
     participant P as Provider (RunPod / Vast.ai)
     participant W as runqy-worker (rented GPU)
-    S->>S: queue has pending jobs, no worker
+    S->>S: queue has pending tasks, no worker
     S->>P: create instance (image + RUNQY_* env, RUNQY_INSTANCE_ID=as-…)
     P->>W: boot container
     W->>S: POST /worker/register
@@ -27,7 +27,7 @@ sequenceDiagram
     S->>P: destroy instance once idle
 ```
 
-1. Every `poll_interval` (default 30s), the autoscaler reads the queue's pending/active jobs,
+1. Every `poll_interval` (default 30s), the autoscaler reads the queue's pending/active tasks,
    latency and live workers.
 2. If a **scale-up trigger** fires, it asks the provider for an instance. The machine boots the
    worker image with `RUNQY_SERVER_URL`, `RUNQY_API_KEY`, `RUNQY_QUEUES` and a correlation id
@@ -139,10 +139,10 @@ queues:
       boot_timeout: "20m"
       max_boot_failures: 5          # instances in a row that never boot before provisioning is suspended
       scale_up:
-        - trigger: no_workers       # jobs pending and nobody listening -> 1 instance
+        - trigger: no_workers       # tasks pending and nobody listening -> 1 instance
         - trigger: queue_depth      # more than 50 pending -> one more instance
           threshold: 50
-        - trigger: latency          # oldest pending job older than 5m -> one more instance
+        - trigger: latency          # oldest pending task older than 5m -> one more instance
           max_latency: "5m"
         - trigger: schedule         # pre-warm 2 instances on weekdays at 08:00, held 10h
           cron: "0 8 * * 1-5"
@@ -186,9 +186,9 @@ example lives in [`examples/autoscale.yaml`](https://github.com/Publikey/runqy/b
 
 | Trigger | Fields | Fires when |
 |---------|--------|------------|
-| `no_workers` | — | Jobs are pending and **no** live worker (managed or manual) serves the queue → at least 1 instance |
-| `queue_depth` | `threshold` | More than `threshold` jobs pending → one more instance |
-| `latency` | `max_latency` | The oldest pending job has waited longer than `max_latency` → one more instance |
+| `no_workers` | — | Tasks are pending and **no** live worker (managed or manual) serves the queue → at least 1 instance |
+| `queue_depth` | `threshold` | More than `threshold` tasks pending → one more instance |
+| `latency` | `max_latency` | The oldest pending task has waited longer than `max_latency` → one more instance |
 | `schedule` | `cron`, `workers`, `duration` | The cron fired → at least `workers` instances, held for `duration` (default: one poll interval) |
 
 ### Scale-down triggers
@@ -217,7 +217,7 @@ queues:
     autoscale:
       scale_up:
         - trigger: no_workers
-          sub_queues: [premium]      # standard jobs alone never rent a machine
+          sub_queues: [premium]      # standard tasks alone never rent a machine
         - trigger: latency
           max_latency: "1m"
           sub_queues: [premium]
@@ -238,8 +238,8 @@ The autoscaler spends real money, so it errs on the side of not leaking machines
 hold the current count instead of adding one per poll. Provisioning failures (no offer, bad key,
 price too low) back off exponentially: poll interval × 2ⁿ, capped at 10 minutes.
 
-**It ignores paused work.** Pending jobs of a paused sub-queue do not count as load, so no
-machine is rented for jobs no worker will take. `min_workers` and schedules still apply.
+**It ignores paused work.** Pending tasks of a paused sub-queue do not count as load, so no
+machine is rented for tasks no worker will take. `min_workers` and schedules still apply.
 
 **It never destroys busy or protected workers.** Idleness is measured per instance from the
 worker's own activity. A worker running a task, or one that touched a task in the last 30 seconds,
@@ -308,7 +308,7 @@ A worker can also declare itself protected at boot with `RUNQY_PROTECTED=true`.
 runqy autoscale status
 ```
 
-```
+```text
 INSTANCE ID   QUEUE      PROVIDER    STATUS   WORKER          PROTECTED  COST
 as-231d…      inference  gpu-runpod  running  a1b2c3:7        false      $0.4120
 ```

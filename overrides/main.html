@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block extrahead %}
+  {#- Fonts are self-hosted (theme.font is false): preload the two files every page needs. -#}
+  <link rel="preload" href="{{ 'assets/fonts/geist-latin-wght-normal.woff2' | url }}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{{ 'assets/fonts/geist-mono-latin-wght-normal.woff2' | url }}" as="font" type="font/woff2" crossorigin>
+
+  {#- Link previews. -#}
+  {% set title = page.meta.title if page and page.meta and page.meta.title else config.site_name %}
+  {% set description = page.meta.description if page and page.meta and page.meta.description else config.site_description %}
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="runqy">
+  <meta property="og:title" content="{{ title | e }}">
+  <meta property="og:description" content="{{ description | e }}">
+  {% if page and page.canonical_url %}
+    <meta property="og:url" content="{{ page.canonical_url }}">
+  {% endif %}
+  <meta property="og:image" content="{{ config.site_url }}assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+{% endblock %}

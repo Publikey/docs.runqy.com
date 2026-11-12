@@ -2,7 +2,37 @@
   "routes": [
     {
       "route": "/getting-started/architecture*",
-      "redirect": "https://runqy.com/docs/getting-started/architecture/",
+      "redirect": "https://runqy.com/docs/concepts/architecture/",
+      "statusCode": 301
+    },
+    {
+      "route": "/server/configuration*",
+      "redirect": "https://runqy.com/docs/reference/server-config/",
+      "statusCode": 301
+    },
+    {
+      "route": "/server/cli*",
+      "redirect": "https://runqy.com/docs/reference/cli/",
+      "statusCode": 301
+    },
+    {
+      "route": "/server/api*",
+      "redirect": "https://runqy.com/docs/reference/rest-api/",
+      "statusCode": 301
+    },
+    {
+      "route": "/worker/configuration*",
+      "redirect": "https://runqy.com/docs/reference/worker-config/",
+      "statusCode": 301
+    },
+    {
+      "route": "/worker/deployment*",
+      "redirect": "https://runqy.com/docs/guides/deploying-workers/",
+      "statusCode": 301
+    },
+    {
+      "route": "/python-sdk/examples*",
+      "redirect": "https://runqy.com/docs/examples/",
       "statusCode": 301
     },
     {
@@ -13,6 +43,11 @@
     {
       "route": "/getting-started/quickstart*",
       "redirect": "https://runqy.com/docs/getting-started/quickstart/",
+      "statusCode": 301
+    },
+    {
+      "route": "/getting-started/first-task*",
+      "redirect": "https://runqy.com/docs/getting-started/first-task/",
       "statusCode": 301
     },
     {
@@ -61,63 +96,23 @@
       "statusCode": 301
     },
     {
-      "route": "/python-sdk/decorators*",
-      "redirect": "https://runqy.com/docs/python-sdk/decorators/",
-      "statusCode": 301
-    },
-    {
-      "route": "/python-sdk/examples*",
-      "redirect": "https://runqy.com/docs/python-sdk/examples/",
-      "statusCode": 301
-    },
-    {
-      "route": "/python-sdk/installation*",
-      "redirect": "https://runqy.com/docs/python-sdk/installation/",
-      "statusCode": 301
-    },
-    {
-      "route": "/server/api*",
-      "redirect": "https://runqy.com/docs/server/api/",
-      "statusCode": 301
-    },
-    {
-      "route": "/server/cli*",
-      "redirect": "https://runqy.com/docs/server/cli/",
-      "statusCode": 301
-    },
-    {
-      "route": "/server/configuration*",
-      "redirect": "https://runqy.com/docs/server/configuration/",
-      "statusCode": 301
-    },
-    {
-      "route": "/worker/configuration*",
-      "redirect": "https://runqy.com/docs/worker/configuration/",
-      "statusCode": 301
-    },
-    {
-      "route": "/worker/deployment*",
-      "redirect": "https://runqy.com/docs/worker/deployment/",
-      "statusCode": 301
-    },
-    {
       "route": "/getting-started*",
-      "redirect": "https://runqy.com/docs/getting-started/",
+      "redirect": "https://runqy.com/docs/getting-started/quickstart/",
       "statusCode": 301
     },
     {
       "route": "/python-sdk*",
-      "redirect": "https://runqy.com/docs/python-sdk/",
+      "redirect": "https://runqy.com/docs/reference/python-sdk/",
       "statusCode": 301
     },
     {
       "route": "/server*",
-      "redirect": "https://runqy.com/docs/server/",
+      "redirect": "https://runqy.com/docs/concepts/architecture/",
       "statusCode": 301
     },
     {
       "route": "/worker*",
-      "redirect": "https://runqy.com/docs/worker/",
+      "redirect": "https://runqy.com/docs/concepts/workers/",
       "statusCode": 301
     },
     {

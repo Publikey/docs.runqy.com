@@ -3,7 +3,7 @@ title: "Worker Control: Drain, Update and Reload Remotely"
 description: "Drain, resume and update runqy workers remotely: roll out new task code, install a worker release in place or reload configuration."
 ---
 
-# Worker Control
+# Worker control
 
 The runqy server can send **commands to running workers** over Redis, so you can manage them
 without SSH or recreating machines:
@@ -14,7 +14,7 @@ without SSH or recreating machines:
 | `resume` | Takes tasks again after a drain. |
 | `code_update` | Updates the task code to the latest commit of the queue branch, reinstalls dependencies and restarts the task process. |
 | `worker_update` | Installs another runqy-worker release and restarts into it, in the same container. |
-| `config_reload` | Asks the task process to reload its configuration, with no restart (needs a [`@reload`](../python-sdk/decorators.md#reload) handler). |
+| `config_reload` | Asks the task process to reload its configuration, with no restart (needs a [`@reload`](../reference/python-sdk.md#reload) handler). |
 
 !!! info "Requirements"
     runqy server and runqy-worker **v0.4.0** or later. Older workers do not listen and ignore
@@ -32,14 +32,14 @@ runqy control worker-update --version 0.4.1       # every worker
 runqy control config-reload --target 3fc7e7ee1e37:1
 ```
 
-```
+```text
 Sent drain to queue inference (id 2223310d948b29a8, 1 receiver(s)).
 Check the outcome with: runqy worker info <worker_id>
 ```
 
 A **target** is a worker id (as shown by `runqy worker list`) or a queue name. Without `--target`,
 the command goes to every worker. The same commands are available from the dashboard
-(**Workers → a worker → Control**) and the API ([`POST /api/control`](../server/api.md#control-endpoint)).
+(**Workers → a worker → Control**) and the API ([`POST /api/control`](../reference/rest-api.md#worker-control)).
 
 Delivery is fire-and-forget: a worker that is offline at that moment misses the command. The
 receiver count tells you how many workers got it (`0` means none is listening, e.g. older workers).
@@ -52,7 +52,7 @@ Each worker reports its last command in its heartbeat:
 runqy worker info 3fc7e7ee1e37:1
 ```
 
-```
+```text
 Status:      drained
 Version:     0.4.0
 Held:        inference (not taking new tasks)
