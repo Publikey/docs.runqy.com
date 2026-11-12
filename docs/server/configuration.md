@@ -85,7 +85,7 @@ CLI flags > Environment variables > Defaults
 | Variable | Default | CLI Flag | Description |
 |----------|---------|----------|-------------|
 | `ASYNQ_READ_ONLY` | `false` | — | Restrict monitoring UI to read-only mode |
-| `PROMETHEUS_ADDRESS` | — | — | Prometheus server URL for time-series charts |
+| `PROMETHEUS_ADDRESS` | — | — | Legacy, not needed: see [Monitoring](#monitoring) |
 | `RUNQY_JWT_SECRET` | (auto-generated) | — | JWT secret for dashboard authentication. If not set, a random secret is generated on each restart (sessions won't survive restarts) |
 | `RUNQY_VAULT_MASTER_KEY` | — | — | Base64-encoded 32-byte key for vault encryption. If not set, the vaults feature is disabled |
 
@@ -374,9 +374,9 @@ This applies to:
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `PROMETHEUS_ADDRESS` | No | Prometheus server URL (e.g., `http://localhost:9090`). Enables time-series charts in the dashboard. If not set, the dashboard uses Redis-based historical data. |
+| `PROMETHEUS_ADDRESS` | No | Legacy. Prometheus server URL queried by `GET /monitoring/api/metrics`. The dashboard does not use it: its charts read Redis. Leave it unset. |
 
-The server always exposes Prometheus metrics at `/metrics` regardless of this setting. See the [Monitoring Guide](../guides/monitoring.md) for full setup instructions including dashboard authentication.
+The server always exposes Prometheus metrics at `/metrics`; nothing has to be configured on the runqy side to scrape them. See the [Monitoring Guide](../guides/monitoring.md) for full setup instructions including dashboard authentication.
 
 ## Vaults
 

@@ -239,6 +239,7 @@ The REST endpoints (admin API key) are listed in the [API Reference](../server/a
 
 ## Prometheus alternative
 
-runqy also exports queue metrics at `/metrics`. If you already run Prometheus and Alertmanager,
-you can alert from there instead (see [Monitoring](monitoring.md#alerting)). Built-in alerts
-need no extra infrastructure and know about workers and autoscaling.
+runqy also exports queue and worker metrics at `/metrics`. If you already run Prometheus and
+Alertmanager, you can alert from there instead, with the rules in
+[Monitoring](monitoring.md#alerting). Built-in alerts need no extra infrastructure and also
+cover autoscaling failures, which are not exported as metrics.
