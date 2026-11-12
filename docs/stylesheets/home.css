@@ -1,0 +1,76 @@
+/* Home page (docs/index.md): hero with a code sample, numbered steps, section cards. */
+
+.md-typeset .rq-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 2.4rem;
+  align-items: center;
+  margin: 1.2rem 0 3rem;
+}
+.md-typeset .rq-hero h1 {
+  font-size: 2.1rem;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  margin: 0 0 1rem;
+  text-wrap: balance;
+}
+.md-typeset .rq-hero__text > p {
+  color: var(--rq-fg-muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+  margin: 0 0 1.4rem;
+  max-width: 30rem;
+}
+.md-typeset .rq-hero__text .md-button {
+  margin: 0 0.4rem 0.4rem 0;
+}
+.md-typeset .rq-hero__code .highlight {
+  margin: 0;
+}
+.md-typeset .rq-hero__code pre > code {
+  font-size: 0.64rem;
+}
+/* The anchor link next to the hero title is noise on a landing page. */
+.md-typeset .rq-hero h1 .headerlink {
+  display: none;
+}
+
+@media screen and (max-width: 59.9844em) {
+  .md-typeset .rq-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.6rem;
+    margin-bottom: 2rem;
+  }
+  .md-typeset .rq-hero h1 {
+    font-size: 1.7rem;
+  }
+}
+
+/* Numbered steps. */
+.md-typeset .rq-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2rem;
+  height: 1.2rem;
+  margin-right: 0.4rem;
+  border: 1px solid var(--rq-line-strong);
+  border-radius: 999px;
+  color: var(--rq-fg-muted);
+  font-family: var(--md-code-font-family);
+  font-size: 0.6rem;
+  font-weight: 500;
+  vertical-align: 0.08em;
+}
+.md-typeset .grid.cards > ul > li > p:first-child a {
+  color: var(--rq-fg);
+}
+.md-typeset .grid.cards > ul > li > p:first-child a:is(:hover, :focus) {
+  color: var(--rq-link);
+}
+.md-typeset .grid.cards > ul > li p {
+  color: var(--rq-fg-muted);
+}
+.md-typeset .grid.cards > ul > li > p:first-child {
+  color: var(--rq-fg);
+}

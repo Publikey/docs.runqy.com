@@ -3,7 +3,7 @@ title: "Task TTL, Timeouts and Retries"
 description: "Control how long Runqy tasks live: max retries, completed and archived TTLs, pending and active timeouts, set globally or per queue."
 ---
 
-# Task Lifecycle: TTL, Timeouts & Retries
+# Task lifecycle: TTL, timeouts and retries
 
 runqy gives you five **lifecycle levers** that control how long tasks live and when they fail.
 They are **dictated by the server** and **overridable per parent queue**, so you set them once in
@@ -146,7 +146,7 @@ The worker only needs fallback values for tasks that **lack** the stamped fields
 tasks enqueued directly into Redis, or tasks created before an upgrade. Server-enqueued tasks
 always carry their resolved values, which take priority.
 
-These fallbacks are configured on the **worker** (see [Worker Configuration](../worker/configuration.md)):
+These fallbacks are configured on the **worker** (see [Worker Configuration](../reference/worker-config.md)):
 
 | Setting (`config.yml`) | Environment variable | Default |
 |------------------------|----------------------|---------|

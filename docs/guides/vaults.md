@@ -3,7 +3,7 @@ title: "Secrets for Workers with Encrypted Vaults"
 description: "Store secrets for Runqy workers in encrypted vaults; entries are injected as environment variables when a worker bootstraps."
 ---
 
-# Vaults: Secure Secret Management
+# Vaults
 
 Vaults provide secure, encrypted storage for secrets that workers need to access external services. Vault entries are automatically injected as environment variables when workers bootstrap.
 
@@ -38,10 +38,7 @@ The vault master key is used to encrypt all vault entries. Generate a secure 256
 openssl rand -base64 32
 ```
 
-Output:
-```
-YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=
-```
+The command prints a 44-character base64 string. That string is the master key.
 
 !!! danger "Keep This Secret"
     - Store the master key securely (e.g., in a secrets manager like AWS Secrets Manager, HashiCorp Vault, or Kubernetes Secrets)
@@ -56,7 +53,7 @@ Set the `RUNQY_VAULT_MASTER_KEY` environment variable:
 === "Environment Variable"
 
     ```bash
-    export RUNQY_VAULT_MASTER_KEY="YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY="
+    export RUNQY_VAULT_MASTER_KEY="<output of openssl rand -base64 32>"
     runqy serve
     ```
 
@@ -65,9 +62,9 @@ Set the `RUNQY_VAULT_MASTER_KEY` environment variable:
     ```yaml
     services:
       runqy-server:
-        image: runqy/server:latest
+        image: ghcr.io/publikey/runqy:latest
         environment:
-          - RUNQY_VAULT_MASTER_KEY=YWJjZGVmZ2hpamtsbW5vcHFyc3R1dnd4eXoxMjM0NTY=
+          - RUNQY_VAULT_MASTER_KEY=<output of openssl rand -base64 32>
     ```
 
 === "Kubernetes"
@@ -79,7 +76,7 @@ Set the `RUNQY_VAULT_MASTER_KEY` environment variable:
       name: runqy-secrets
     type: Opaque
     data:
-      vault-master-key: WVdKalpHVm1aMmhwYW10c2JXNXZjSEZ5YzNSMWRuZDRlWG94TWpNME5UWT0=
+      vault-master-key: <base64 of the master key>
     ---
     apiVersion: apps/v1
     kind: Deployment
@@ -139,7 +136,7 @@ runqy vault show api-keys
 ```
 
 Output:
-```
+```text
 Vault: api-keys
 Description: API keys for external services
 Created: 2024-01-15T10:30:00Z
@@ -162,7 +159,7 @@ runqy vault get api-keys OPENAI_API_KEY
 ```
 
 Output:
-```
+```text
 sk-proj-actual-key-value-here
 ```
 
@@ -211,27 +208,34 @@ When a worker registers for this queue, the server:
 ### Access in Python
 
 ```python
+import json
 import os
+import urllib.request
+
 from runqy_python import task, run
 
+
 @task
-def generate_text(payload, ctx):
-    # Access vault entries as environment variables
-    openai_key = os.environ.get("OPENAI_API_KEY")
+def generate_text(payload):
+    # The OPENAI_API_KEY entry of the "api-keys" vault is an environment variable here
+    api_key = os.environ["OPENAI_API_KEY"]
 
-    # Use the secrets
-    from openai import OpenAI
-    client = OpenAI(
-        
-        api_key=openai_key,
+    request = urllib.request.Request(
+        "https://api.openai.com/v1/chat/completions",
+        data=json.dumps({
+            "model": payload.get("model", "gpt-4o-mini"),
+            "messages": [{"role": "user", "content": payload["prompt"]}],
+        }).encode(),
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
     )
+    with urllib.request.urlopen(request, timeout=60) as response:
+        body = json.load(response)
 
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[{"role": "user", "content": payload["prompt"]}]
-    )
+    return {"text": body["choices"][0]["message"]["content"]}
 
-    return {"text": response.choices[0].message.content}
 
 if __name__ == "__main__":
     run()

@@ -1,81 +1,96 @@
-site_name: Runqy docs
+site_name: runqy docs
 # Published under runqy.com/docs/ by the runqy.com build; docs.runqy.com only redirects there
 site_url: https://runqy.com/docs/
-site_description: Documentation for runqy - a distributed task queue system with server-driven bootstrap architecture
+site_description: Documentation for runqy, a self-hosted task queue for Python and GPU workloads.
 site_author: Publikey
 
 # Internal maintainer docs that must not be published or listed in the sitemap
 exclude_docs: |
   FUNCTIONAL_TESTS.md
 
-repo_name: Publikey/docs.runqy.com
-repo_url: https://github.com/Publikey/docs.runqy.com
-edit_uri: edit/main/docs/
+repo_name: Publikey/runqy
+repo_url: https://github.com/Publikey/runqy
+edit_uri: https://github.com/Publikey/docs.runqy.com/edit/main/docs/
 
 theme:
   name: material
-  # Dark first, with the runqy.com accent (custom colors in stylesheets/extra.css)
+  # Templates in overrides/: head additions (main.html) and the inline logo (partials/logo.html)
+  custom_dir: overrides
+  # Geist is self-hosted (docs/stylesheets/fonts.css): nothing is loaded from Google Fonts
+  font: false
+  favicon: assets/favicon.svg
+  # The runqy dashboard's design system (docs/stylesheets/tokens.css). Dark first.
   palette:
     - scheme: slate
       primary: custom
       accent: custom
       toggle:
-        icon: material/brightness-4
+        icon: material/weather-sunny
         name: Switch to light mode
     - scheme: default
       primary: custom
       accent: custom
       toggle:
-        icon: material/brightness-7
+        icon: material/weather-night
         name: Switch to dark mode
   features:
     - navigation.tabs
     - navigation.sections
-    - navigation.expand
     - navigation.top
+    - navigation.footer
+    - toc.follow
     - search.suggest
     - search.highlight
     - content.tabs.link
     - content.code.copy
+    - content.code.annotate
     - content.action.edit
 
 extra_css:
-  - stylesheets/extra.css
+  - stylesheets/fonts.css
+  - stylesheets/tokens.css
+  - stylesheets/theme.css
+  - stylesheets/home.css
+
+extra_javascript:
+  - javascripts/anchor-redirects.js
+
+# A broken link, anchor or nav entry fails the build (CI runs `mkdocs build --strict`).
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+    absolute_links: warn
+  links:
+    not_found: warn
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: warn
 
 plugins:
   - search
-  - tags
+  # llms.txt and llms-full.txt, with sections taken from the nav below.
+  # runqy.com copies both files to its root: its deploy fails if they are missing.
   - llmstxt-md:
-      sections:
-        Getting Started:
-          - getting-started/index.md: "Introduction to runqy"
-          - getting-started/installation.md: "Installation methods (CLI, Docker, source)"
-          - getting-started/quickstart.md: "Quick start guide with Docker Compose"
-          - getting-started/architecture.md: "Architecture overview and concepts"
-        Server:
-          - server/index.md: "Server overview"
-          - server/configuration.md: "Server configuration reference"
-          - server/cli.md: "CLI commands reference"
-          - server/api.md: "REST API reference (enqueue, batch, task status)"
-        Worker:
-          - worker/index.md: "Worker overview"
-          - worker/configuration.md: "Worker configuration reference"
-          - worker/deployment.md: "Deployment and bootstrap process"
-        Python SDK:
-          - python-sdk/index.md: "Python SDK overview"
-          - python-sdk/installation.md: "SDK installation"
-          - python-sdk/decorators.md: "Task decorators (@task, @load)"
-          - python-sdk/examples.md: "Code examples"
-        Guides:
-          - guides/local-development.md: "Local development setup"
-          - guides/enqueueing-tasks.md: "How to enqueue tasks"
-          - guides/task-lifecycle.md: "Task TTL, timeouts, and retries (server-dictated, per-queue overrides)"
-          - guides/result-delivery.md: "Getting task results"
-          - guides/vaults.md: "Secrets management with Vaults"
-          - guides/monitoring.md: "Monitoring and metrics"
-          - guides/alerting.md: "Email alerts (SMTP/SendGrid): rules, per-queue overrides, delivery"
-          - guides/autoscaling.md: "GPU autoscaling on RunPod/Vast.ai: triggers, providers, safety rules"
-          - guides/worker-control.md: "Remote worker control: drain, code update, worker update, config reload"
+      # Each page is also published as Markdown (<page>/index.md); the plugin's floating
+      # "Copy Markdown" button is off because its colours cannot follow the theme.
+      enable_copy_button: false
+  # Pages moved in the November 2026 reorganisation. Never reuse the old paths.
+  - redirects:
+      redirect_maps:
+        getting-started/index.md: concepts/architecture.md
+        getting-started/architecture.md: concepts/architecture.md
+        server/index.md: concepts/architecture.md
+        server/configuration.md: reference/server-config.md
+        server/cli.md: reference/cli.md
+        server/api.md: reference/rest-api.md
+        worker/index.md: concepts/workers.md
+        worker/configuration.md: reference/worker-config.md
+        worker/deployment.md: guides/deploying-workers.md
+        python-sdk/index.md: reference/python-sdk.md
+        python-sdk/installation.md: reference/python-sdk.md
+        python-sdk/decorators.md: reference/python-sdk.md
+        python-sdk/examples.md: examples/index.md
 
 markdown_extensions:
   - pymdownx.emoji:
@@ -86,7 +101,7 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets
+  - pymdownx.keys
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
@@ -104,50 +119,51 @@ markdown_extensions:
 
 nav:
   - Home: index.md
-  - Getting Started:
-      - Introduction: getting-started/index.md
+  - Get started:
+      - Quickstart: getting-started/quickstart.md
+      - Your first task: getting-started/first-task.md
       - Installation: getting-started/installation.md
-      - Quick Start: getting-started/quickstart.md
-      - Architecture: getting-started/architecture.md
-  - runqy Server:
-      - Overview: server/index.md
-      - Configuration: server/configuration.md
-      - CLI Reference: server/cli.md
-      - API Reference: server/api.md
-  - runqy Worker:
-      - Overview: worker/index.md
-      - Configuration: worker/configuration.md
-      - Deployment: worker/deployment.md
-  - runqy-python (Python SDK):
-      - Overview: python-sdk/index.md
-      - Installation: python-sdk/installation.md
-      - Decorators: python-sdk/decorators.md
-      - Examples: python-sdk/examples.md
+  - Concepts:
+      - Architecture: concepts/architecture.md
+      - Queues and priorities: concepts/queues.md
+      - Workers: concepts/workers.md
   - Guides:
-      - Local Development: guides/local-development.md
-      - Enqueueing Tasks: guides/enqueueing-tasks.md
-      - Task Lifecycle (TTL, Timeouts, Retries): guides/task-lifecycle.md
-      - Result Delivery: guides/result-delivery.md
-      - Vaults (Secrets): guides/vaults.md
+      - Enqueueing tasks: guides/enqueueing-tasks.md
+      - Getting results: guides/result-delivery.md
+      - Payload schemas: guides/payload-schemas.md
+      - Task lifecycle: guides/task-lifecycle.md
+      - Vaults (secrets): guides/vaults.md
+      - Deploying workers: guides/deploying-workers.md
+      - Running without Docker: guides/local-development.md
+  - Operate:
+      - GPU autoscaling: guides/autoscaling.md
+      - Worker control: guides/worker-control.md
       - Monitoring: guides/monitoring.md
-      - Email Alerts: guides/alerting.md
-      - GPU Autoscaling: guides/autoscaling.md
-      - Worker Control: guides/worker-control.md
-  - For LLMs:
-      - "llms.txt ↗": "https://runqy.com/docs/llms.txt"
-      - "llms-full.txt ↗": "https://runqy.com/docs/llms-full.txt"
+      - Email alerts: guides/alerting.md
+      - Production deployment: operate/production.md
+      - Security: operate/security.md
+      - Upgrading: operate/upgrading.md
+  - Reference:
+      - CLI: reference/cli.md
+      - REST API: reference/rest-api.md
+      - Server configuration: reference/server-config.md
+      - Queue configuration: reference/queue-config.md
+      - Worker configuration: reference/worker-config.md
+      - Python SDK: reference/python-sdk.md
+  - Examples: examples/index.md
+  - Troubleshooting: troubleshooting.md
 
 extra:
-  # The header logo leads back to the site the docs are published on
-  homepage: https://runqy.com/
+  generator: false
   social:
     - icon: fontawesome/solid/globe
       link: https://runqy.com
       name: runqy.com
     - icon: fontawesome/brands/github
-      link: https://github.com/Publikey
+      link: https://github.com/Publikey/runqy
+      name: runqy on GitHub
     - icon: fontawesome/solid/robot
       link: https://runqy.com/docs/llms.txt
-      name: LLMs.txt
+      name: llms.txt
 
 copyright: Copyright &copy; 2024-2026 Publikey

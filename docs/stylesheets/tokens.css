@@ -1,0 +1,159 @@
+/* runqy design tokens, taken from the dashboard (runqy/app/monitoring/ui/src/app.css and
+   src/lib/theme/runqy.css), then mapped onto Material's variables.
+
+   Dark ("slate") is the reference scheme. Light ("default") is derived from the same grey
+   scale; its links use a darker blue because the dashboard blue is too faint on white. */
+
+/* ---- Dark ---------------------------------------------------------------------------- */
+[data-md-color-scheme="slate"] {
+  --rq-canvas: #09090b;
+  --rq-panel: #0f0f12;
+  --rq-raised: #16161a;
+  --rq-overlay: #1c1c21;
+  --rq-hover: rgb(255 255 255 / 0.04);
+  --rq-line-subtle: rgb(255 255 255 / 0.06);
+  --rq-line: rgb(255 255 255 / 0.09);
+  --rq-line-strong: rgb(255 255 255 / 0.15);
+  --rq-fg: #ededef;
+  --rq-fg-muted: #a1a1aa;
+  --rq-fg-subtle: #8b8b94;
+  --rq-fg-faint: #52525b;
+  --rq-primary: #4c82f7;
+  --rq-primary-strong: #3a6ee6; /* button background: white text stays readable */
+  --rq-link: #6a97f8;
+  --rq-link-hover: #8fb2fb;
+  --rq-selection: rgb(76 130 247 / 0.35);
+  --rq-success: #3fb950;
+  --rq-warning: #d29922;
+  --rq-danger: #f2555a;
+  --rq-shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.5);
+
+  --rq-code-keyword: #8fb2fb;
+  --rq-code-string: #6bd189;
+  --rq-code-number: #e9be58;
+  --rq-code-function: #c4a7f5;
+  --rq-code-comment: #8b8b94;
+}
+
+/* ---- Light --------------------------------------------------------------------------- */
+[data-md-color-scheme="default"] {
+  --rq-canvas: #ffffff;
+  --rq-panel: #f7f7f8;
+  --rq-raised: #ededef;
+  --rq-overlay: #ffffff;
+  --rq-hover: rgb(9 9 11 / 0.04);
+  --rq-line-subtle: rgb(9 9 11 / 0.07);
+  --rq-line: rgb(9 9 11 / 0.11);
+  --rq-line-strong: rgb(9 9 11 / 0.2);
+  --rq-fg: #18181b;
+  --rq-fg-muted: #52525b;
+  --rq-fg-subtle: #6b6b74;
+  --rq-fg-faint: #a1a1aa;
+  --rq-primary: #3a6ee6;
+  --rq-primary-strong: #3a6ee6;
+  --rq-link: #2f62d8;
+  --rq-link-hover: #2a58c8;
+  --rq-selection: rgb(76 130 247 / 0.25);
+  --rq-success: #15803d;
+  --rq-warning: #92590a;
+  --rq-danger: #b42318;
+  --rq-shadow-overlay: 0 8px 24px rgb(9 9 11 / 0.12);
+
+  --rq-code-keyword: #2a58c8;
+  --rq-code-string: #15803d;
+  --rq-code-number: #92590a;
+  --rq-code-function: #7c3aed;
+  --rq-code-comment: #6b6b74;
+}
+
+/* ---- Material variables (both schemes) ----------------------------------------------- */
+[data-md-color-scheme="slate"],
+[data-md-color-scheme="default"] {
+  --md-default-bg-color: var(--rq-canvas);
+  --md-default-bg-color--light: var(--rq-panel);
+  --md-default-bg-color--lighter: var(--rq-raised);
+  --md-default-bg-color--lightest: var(--rq-raised);
+
+  --md-default-fg-color: var(--rq-fg);
+  --md-default-fg-color--light: var(--rq-fg-muted);
+  --md-default-fg-color--lighter: var(--rq-fg-faint);
+  --md-default-fg-color--lightest: var(--rq-line);
+
+  /* Header and tabs: same surface as the page, separated by a hairline (see theme.css). */
+  --md-primary-fg-color: var(--rq-canvas);
+  --md-primary-fg-color--light: var(--rq-panel);
+  --md-primary-fg-color--dark: var(--rq-canvas);
+  --md-primary-bg-color: var(--rq-fg);
+  --md-primary-bg-color--light: var(--rq-fg-muted);
+
+  --md-accent-fg-color: var(--rq-link-hover);
+  --md-accent-fg-color--transparent: var(--rq-hover);
+  --md-accent-bg-color: #ffffff;
+  --md-accent-bg-color--light: rgb(255 255 255 / 0.7);
+
+  --md-typeset-color: var(--rq-fg);
+  --md-typeset-a-color: var(--rq-link);
+  --md-typeset-mark-color: var(--rq-selection);
+  --md-typeset-kbd-color: var(--rq-raised);
+  --md-typeset-kbd-accent-color: var(--rq-overlay);
+  --md-typeset-kbd-border-color: var(--rq-line-strong);
+  --md-typeset-table-color: var(--rq-line);
+  --md-typeset-table-color--light: var(--rq-hover);
+
+  --md-code-fg-color: var(--rq-fg);
+  --md-code-bg-color: var(--rq-panel);
+  --md-code-hl-color: var(--rq-primary);
+  --md-code-hl-color--light: var(--rq-selection);
+  --md-code-hl-keyword-color: var(--rq-code-keyword);
+  --md-code-hl-constant-color: var(--rq-code-keyword);
+  --md-code-hl-string-color: var(--rq-code-string);
+  --md-code-hl-special-color: var(--rq-code-string);
+  --md-code-hl-number-color: var(--rq-code-number);
+  --md-code-hl-function-color: var(--rq-code-function);
+  --md-code-hl-name-color: var(--rq-fg);
+  --md-code-hl-variable-color: var(--rq-fg);
+  --md-code-hl-operator-color: var(--rq-fg-muted);
+  --md-code-hl-punctuation-color: var(--rq-fg-muted);
+  --md-code-hl-comment-color: var(--rq-code-comment);
+  --md-code-hl-generic-color: var(--rq-fg-muted);
+
+  --md-admonition-fg-color: var(--rq-fg);
+  --md-admonition-bg-color: var(--rq-panel);
+
+  --md-footer-fg-color: var(--rq-fg);
+  --md-footer-fg-color--light: var(--rq-fg-muted);
+  --md-footer-fg-color--lighter: var(--rq-fg-subtle);
+  --md-footer-bg-color: var(--rq-canvas);
+  --md-footer-bg-color--dark: var(--rq-canvas);
+
+  --md-shadow-z1: none;
+  --md-shadow-z2: var(--rq-shadow-overlay);
+  --md-shadow-z3: var(--rq-shadow-overlay);
+
+  --md-mermaid-font-family: var(--md-text-font-family);
+  --md-mermaid-edge-color: var(--rq-fg-subtle);
+  --md-mermaid-node-bg-color: var(--rq-raised);
+  --md-mermaid-node-fg-color: var(--rq-line-strong);
+  --md-mermaid-label-bg-color: var(--rq-canvas);
+  --md-mermaid-label-fg-color: var(--rq-fg-muted);
+  --md-mermaid-sequence-actor-bg-color: var(--rq-raised);
+  --md-mermaid-sequence-actor-fg-color: var(--rq-fg);
+  --md-mermaid-sequence-actor-border-color: var(--rq-line-strong);
+  --md-mermaid-sequence-actor-line-color: var(--rq-line-strong);
+  --md-mermaid-sequence-actorman-bg-color: var(--rq-raised);
+  --md-mermaid-sequence-actorman-line-color: var(--rq-fg-subtle);
+  --md-mermaid-sequence-box-bg-color: var(--rq-panel);
+  --md-mermaid-sequence-box-fg-color: var(--rq-fg);
+  --md-mermaid-sequence-label-bg-color: var(--rq-raised);
+  --md-mermaid-sequence-label-fg-color: var(--rq-fg);
+  --md-mermaid-sequence-loop-bg-color: var(--rq-panel);
+  --md-mermaid-sequence-loop-fg-color: var(--rq-fg-muted);
+  --md-mermaid-sequence-loop-border-color: var(--rq-line-strong);
+  --md-mermaid-sequence-message-fg-color: var(--rq-fg-muted);
+  --md-mermaid-sequence-message-line-color: var(--rq-fg-subtle);
+  --md-mermaid-sequence-note-bg-color: var(--rq-raised);
+  --md-mermaid-sequence-note-fg-color: var(--rq-fg);
+  --md-mermaid-sequence-note-border-color: var(--rq-line-strong);
+  --md-mermaid-sequence-number-bg-color: var(--rq-primary-strong);
+  --md-mermaid-sequence-number-fg-color: #ffffff;
+}
