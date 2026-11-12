@@ -101,7 +101,7 @@ your triggers. You can play the rented machine yourself by starting a worker wit
 | `verified_only` | no | Rent only machines verified by Vast (default `true`) |
 | `exclude_countries` | no | ISO country codes to avoid (default `["CN"]`: pulling from ghcr.io and cloning from GitHub is slow or blocked there). `[]` allows every country |
 | `countries` | no | Allow-list of ISO country codes (overrides `exclude_countries`) |
-| `min_download_mbps` | no | Minimum host download bandwidth (default `100`): the worker image weighs several GB |
+| `min_download_mbps` | no | Minimum host download bandwidth (default `100`): the worker image weighs several GB. A queue can ask for more with `instance.min_download_mbps`. The figure is the host's own speed test, not a guarantee: a host that is too slow in practice is avoided after its first failed boot (see [below](#safety-rules)) |
 | `min_cuda_version` | no | Only hosts whose driver supports this CUDA version (default `"12.8"`; `"none"` disables) |
 
 The account may run machines runqy does not manage (e.g. hand-made production instances).
@@ -137,6 +137,7 @@ queues:
       max_workers: 4
       poll_interval: "30s"
       boot_timeout: "20m"
+      max_boot_failures: 5          # instances in a row that never boot before provisioning is suspended
       scale_up:
         - trigger: no_workers       # jobs pending and nobody listening -> 1 instance
         - trigger: queue_depth      # more than 50 pending -> one more instance
@@ -159,6 +160,7 @@ queues:
         max_price_per_hour: 0.60
         min_ram_gb: 32              # system RAM, not GPU memory
         min_vcpu: 8
+        min_download_mbps: 500      # Vast.ai: faster hosts for a queue that downloads a lot at boot
 ```
 
 The same block is editable in the dashboard (queue configuration → Autoscaling). A complete
@@ -174,9 +176,11 @@ example lives in [`examples/autoscale.yaml`](https://github.com/Publikey/runqy/b
 | `max_workers` | — | Upper bound (required, ≥ 1) |
 | `poll_interval` | `30s` | How often this queue is evaluated |
 | `boot_timeout` | `20m` | An instance without a ready worker after this is destroyed |
+| `max_boot_failures` | `5` | After this many instances in a row that never became ready, provisioning is suspended for 24 hours (or until `runqy autoscale resume <queue>`) |
 | `instance.gpu` / `image` / `disk_gb` / `max_price_per_hour` | — | What to rent (see provider precedence above) |
 | `instance.min_ram_gb` | provider default | Minimum system RAM in GB. RunPod: `minRAMPerGPU` (its default is 8 GB). Vast.ai: offers with at least this `cpu_ram` |
 | `instance.min_vcpu` | provider default | Minimum vCPUs. RunPod: `minVCPUPerGPU` (its default is 2). Vast.ai: offers with at least this many effective vCPUs |
+| `instance.min_download_mbps` | provider setting | Vast.ai only: offers advertising at least this download speed. Overrides the provider's `min_download_mbps` for this queue. Ignored by RunPod |
 
 ### Scale-up triggers
 
@@ -261,11 +265,22 @@ container at all (Docker or GPU errors on the host). Such an instance is destroy
 provider reports it, its machine is avoided for 24 hours, and the next instance is rented after a
 short pause (30s, doubling up to 10 minutes) instead of the boot-failure backoff below.
 
-**It slows down when machines never boot.** When an instance is destroyed because no worker
-became ready (bad image, task crashing at startup), the next instance waits `boot_timeout`, then
-2×, 4×… up to one hour. Without it, a broken image would rent and pay for a new machine every
-`boot_timeout`, forever. The first worker that becomes ready resets the pause. A machine that
-worked and then died (preemption, crash) does not count.
+**It slows down when machines never boot, then stops.** When an instance is destroyed because no
+worker became ready (bad image, task crashing at startup, host too slow to download what the task
+needs), the next instance waits `boot_timeout`, then 2×, 4×… up to one hour. On Vast.ai that
+machine is also avoided for 24 hours, since the cheapest offer is often the same host again.
+After `max_boot_failures` instances in a row (default 5), the cause is no longer one bad host:
+provisioning is **suspended for 24 hours** and an `autoscale_failure` alert says so. Each failed
+boot bills a whole `boot_timeout`, so retrying every hour only adds to the invoice. Fix the image,
+the task code or the queue config, then lift the suspension:
+
+```bash
+runqy autoscale resume inference
+```
+
+The dashboard's Autoscaling page has the same **Resume now** action on a paused queue. Left
+alone, one instance is tried again after the 24 hours. The first worker that becomes ready
+resets the count. A machine that worked and then died (preemption, crash) does not count.
 
 **Pauses survive restarts.** The provisioning pauses above and the Vast.ai hosts to avoid are
 kept in Redis (`runqy:autoscale:backoff`, `runqy:autoscale:provider-state:<provider>`): a server
@@ -302,6 +317,12 @@ The dashboard's **Autoscaling** page shows the same, plus provider management. I
 `provisioning` → `booting` → `running` → `draining` → `terminated`, or `failed` (with the reason in
 its metadata). `booting` means the provider reports the machine up but no worker has registered
 yet (image pull, dependency install). `runqy autoscale status` and the dashboard show the GPU actually rented and its hourly price, as reported by the provider (RunPod: the pod's price, Savings Plans included; Vast.ai: the rented offer). Costs are that price times the time each instance was alive; the queue's `instance.max_price_per_hour` is only used for providers that report no price.
+
+**Machine logs.** `runqy autoscale logs <instance-id>` returns a machine's output: live while it
+exists, otherwise the last 200 lines saved before it was destroyed. They are saved when an
+instance fails (never became ready, lost its worker) and when the provider reports a running
+machine as stopped, so the reason a worker went away is still there afterwards. A normal
+scale-down saves nothing.
 
 Pair autoscaling with [alerts](alerting.md): the `autoscale_failure` rule emails you when
 provisioning fails or an instance is destroyed for failure.

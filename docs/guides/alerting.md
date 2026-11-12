@@ -119,17 +119,36 @@ the stored value.
 | `no_workers` | `when_idle` | Jobs are pending and **no live worker** serves the queue. With `when_idle: true`, also when nothing is pending. |
 | `latency` | `max_latency` | The **oldest pending job** has waited longer than `max_latency` |
 | `pending` | `threshold` | More than `threshold` jobs are pending |
-| `worker_unhealthy` | — | A worker serving the queue reports `healthy: false`: its Python process is down (crashed, being restarted by auto-recovery, or [degraded](../worker/configuration.md#degraded-state) after repeated crashes). Add `for: 2m` to ignore quick automatic restarts. |
+| `worker_unhealthy` | — | A worker serving the queue reports `healthy: false`: its Python process is down (crashed, being restarted by auto-recovery, or [degraded](../worker/configuration.md#degraded-state) after repeated crashes). Waits `for: 1m` by default, so a worker stopping or a quick automatic restart does not alert; set `for: 0s` to alert at once. |
 | `autoscale_failure` | — | The [autoscaler](autoscaling.md) failed to provision an instance, is missing a prerequisite, or destroyed an instance that never became ready or lost its worker |
 
-Every rule except `autoscale_failure` accepts `for`: how long the condition must hold
-**continuously** before the alert fires (default `0`). Use it to ride out short blips, e.g. an
-autoscaled queue whose first worker takes a few minutes to boot:
+Every rule except `autoscale_failure` accepts two delays:
+
+| Field | Default | Meaning |
+|-------|---------|---------|
+| `for` | `0` (`1m` for `worker_unhealthy`) | How long the condition must hold **continuously** before the alert fires |
+| `resolve_after` | `5m` | How long the condition must stay **clear** before the alert is resolved (`0s` = at once) |
+
+`for` rides out short blips, e.g. an autoscaled queue whose first worker takes a few minutes to
+boot:
 
 ```yaml
 rules:
   - type: no_workers
     for: 5m
+```
+
+`resolve_after` keeps a value that hovers around its threshold from sending a `FIRING` /
+`RESOLVED` pair at every swing. With a `latency` rule at 20 minutes, the oldest job is picked up
+(condition clear) and the next one crosses 20 minutes a moment later (condition true again):
+that is one alert, which resolves once the latency has stayed under the threshold for 5 minutes.
+The `RESOLVED` email reports how long the alert really lasted, without that delay.
+
+```yaml
+rules:
+  - type: latency
+    max_latency: 20m
+    resolve_after: 10m   # busier queue: wait longer before calling it resolved
 ```
 
 !!! info "Paused queues are skipped"
@@ -172,7 +191,7 @@ apply. `disabled: true` on a rule turns that type off; `disabled: true` on the b
 
 - **One email per evaluation.** Everything that changed in a cycle is grouped into a single
   digest, whose subject names the affected queues (`[runqy] 2 firing — inference, reports`).
-- **Resolved.** When a firing alert clears, you get a `RESOLVED` email (`send_resolved: false` to disable).
+- **Resolved.** When a firing alert has stayed clear for its `resolve_after` (default `5m`), you get a `RESOLVED` email (`send_resolved: false` to disable).
 - **Reminders.** A still-firing alert is re-sent every `repeat_interval` (default `4h`; `"0"` = once).
 - **Events.** `autoscale_failure` events are grouped per queue and throttled to one email per
   `repeat_interval` (at least one hour when it is `0`).

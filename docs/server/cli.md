@@ -407,6 +407,17 @@ as-231d…      inference  gpu-runpod  running  a1b2c3:7   false      $0.4120
 Total accumulated cost: $0.4120
 ```
 
+### Resume Provisioning
+
+```bash
+runqy autoscale resume inference
+```
+
+Lifts the queue's provisioning pause and starts its failure count over. Use it once the cause is
+fixed, after repeated failures or after a
+[suspension](../guides/autoscaling.md#safety-rules) (`max_boot_failures` instances in a row
+that never became ready); otherwise the autoscaler waits for the pause to end.
+
 ### Protect an Instance
 
 ```bash
@@ -556,7 +567,7 @@ runqy -s https://server:3000 -k API_KEY config reload
 | `vault list/create/show/delete` | Yes | Full support |
 | `vault set/unset/entries` | Yes | Full support |
 | `vault get` | No | Local-only (returns decrypted secrets) |
-| `autoscale status/protect/unprotect` | Yes | Full support |
+| `autoscale status/logs/resume/protect/unprotect` | Yes | Full support |
 | `autoscale providers ...` | Yes | Full support |
 | `alerts status/test` | Yes | Full support |
 | `serve` | No | Server command, not applicable |

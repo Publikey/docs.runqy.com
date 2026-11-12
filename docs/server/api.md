@@ -424,6 +424,7 @@ GPU autoscaling status and provider management. Admin key required. Provider end
 | `GET` | `/api/autoscale/status` | Tracked instances, states and accumulated cost |
 | `POST` | `/api/autoscale/instances/{id}/protect` | Protect an instance from scale-down |
 | `POST` | `/api/autoscale/instances/{id}/unprotect` | Remove the protection |
+| `POST` | `/api/autoscale/queues/{queue}/resume` | Lift the queue's provisioning pauses (repeated failures, suspension) and start the failure counts over |
 | `GET` | `/api/autoscale/provider-types` | Available provider types (`mock`, `runpod`, `vastai`) |
 | `GET` | `/api/autoscale/providers` | List providers (secrets masked) |
 | `POST` | `/api/autoscale/providers` | Create a provider |
