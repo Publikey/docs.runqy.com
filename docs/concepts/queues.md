@@ -114,7 +114,7 @@ Over many tasks, about 60% of what the worker runs comes from `high`, 30% from `
 - **Empty lanes cost nothing.** If `high` is empty, the worker takes the next sub-queue in the order. Between `standard` and `low`, `standard` then comes first 3 times out of 4.
 - **Priorities matter only under backlog.** An idle worker takes any task the moment it arrives, whatever its sub-queue.
 
-Only the ratio between priorities counts: `6` and `3` behave like `2` and `1`. A priority must be at least 1.
+Only the ratio between priorities counts: `6` and `3` behave like `2` and `1`. Priority `0` is a special case, described below.
 
 ### Strict priority
 
@@ -136,6 +136,35 @@ queues:
 ```
 
 The worker then always polls this parent's sub-queues in descending priority (ties broken by name). `standard` is served only when `premium` is empty, so a steady flow of premium tasks can starve it. Use strict mode when that is what you want, for example interactive requests ahead of a batch backlog.
+
+### Idle-only sub-queues (priority 0)
+
+A sub-queue with `priority: 0` is idle-only: a worker polls it after every sub-queue of priority 1 or more it listens on, whatever their parent queue. Its tasks run only when all of those are empty, so the lane uses spare capacity. A typical use is free-tier or background work that must never pass a paying request:
+
+```yaml
+queues:
+  inference:
+    sub_queues:
+      - name: premium
+        priority: 8
+      - name: standard
+        priority: 2
+      - name: free
+        priority: 0        # served only when premium and standard are empty
+    deployment:
+      git_url: "https://github.com/example/my-tasks.git"
+      branch: "main"
+      startup_cmd: "python main.py"
+```
+
+What to expect:
+
+- **It can starve.** While the other sub-queues always have work, an idle-only task waits.
+- **No preemption.** An idle-only task that has started runs to its end. A task arriving meanwhile waits for a free slot, as it would behind any other task.
+- **Several idle-only sub-queues** share the leftover capacity evenly.
+- **Nothing else changes.** Workers of the parent queue listen on it like on any sub-queue, and its tasks count for autoscaling and alerts. To leave it out, list the sub-queues to watch with `sub_queues` on the [autoscale triggers](../guides/autoscaling.md#watching-only-some-sub-queues) and the queue's [alert rules](../guides/alerting.md#per-queue-overrides).
+
+Priority 0 must be written explicitly: a sub-queue without `priority` is rejected. Workers that predate this feature treat priority 0 as a weight of 1.
 
 ### Priority between parent queues
 

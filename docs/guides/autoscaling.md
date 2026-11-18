@@ -195,7 +195,7 @@ example lives in [`examples/autoscale.yaml`](https://github.com/Publikey/runqy/b
 
 | Trigger | Fields | Effect |
 |---------|--------|--------|
-| `idle` | `timeout` | Destroys instances whose worker has not started or finished a task for `timeout`, oldest first |
+| `idle` | `timeout`, `sub_queues` | Destroys instances whose worker has not started or finished a task for `timeout`, oldest first |
 | `schedule` | `cron` | Goes back to `min_workers`, regardless of idleness (busy workers are still spared) |
 
 Cron expressions use the standard 5 fields (`minute hour day month weekday`).
@@ -229,6 +229,35 @@ Names are short sub-queue names (`premium`, not `inference.premium`). A YAML fil
 sub-queue the queue does not have is rejected at load; a config saved through the API or the
 dashboard is not checked against the other sub-queues, so the server logs a warning instead and
 that trigger never fires. Paused sub-queues count as empty, as for the whole-queue triggers.
+
+The `idle` trigger takes `sub_queues` too. Only tasks of the listed sub-queues then keep an
+instance alive: one that has run nothing but other sub-queues' tasks for `timeout` is scaled
+down. It is drained first, so the task it is running still finishes. This is how a queue with an
+[idle-only sub-queue](../concepts/queues.md#idle-only-sub-queues-priority-0) stops paying for
+machines that only have free work left:
+
+```yaml
+queues:
+  inference:
+    sub_queues:
+      - name: premium
+        priority: 10
+      - name: free
+        priority: 0
+    autoscale:
+      scale_up:
+        - trigger: no_workers
+          sub_queues: [premium]      # free tasks never rent a machine
+      scale_down:
+        - trigger: idle
+          timeout: "10m"
+          sub_queues: [premium]      # free tasks never keep one alive
+```
+
+Rented machines still listen on every sub-queue of the queue, so they serve free tasks whenever
+they have nothing else to do. Keep the two sides consistent: if a scale-up trigger counts a
+sub-queue that `idle` ignores, machines are rented for it and released again. Workers that do not
+report their activity per sub-queue (older releases) count every task, as without `sub_queues`.
 
 ## Safety rules
 
