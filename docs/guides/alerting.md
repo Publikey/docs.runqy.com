@@ -187,6 +187,37 @@ queues:
 A queue rule **replaces** the global rule of the same type; global rules it doesn't mention still
 apply. `disabled: true` on a rule turns that type off; `disabled: true` on the block mutes the queue.
 
+### Watching only some sub-queues
+
+A queue's `no_workers`, `latency` and `pending` rules look at every sub-queue by default. Add
+`sub_queues` (short names) to count only some of them, for example to leave out an
+[idle-only sub-queue](../concepts/queues.md#idle-only-sub-queues-priority-0) whose backlog is
+expected:
+
+```yaml
+queues:
+  inference:
+    sub_queues:
+      - name: premium
+        priority: 8
+      - name: free
+        priority: 0
+    deployment:
+      # ...
+    alerts:
+      rules:
+        - type: latency
+          max_latency: 2m
+          sub_queues: [premium]  # a waiting free task does not alert
+        - type: pending
+          threshold: 500
+          sub_queues: [premium]
+```
+
+`sub_queues` is only accepted in a queue's own rules: global rules apply to every queue, whose
+sub-queues have different names. A YAML file naming a sub-queue the queue does not have is
+rejected at load.
+
 ## Notifications
 
 - **One email per evaluation.** Everything that changed in a cycle is grouped into a single

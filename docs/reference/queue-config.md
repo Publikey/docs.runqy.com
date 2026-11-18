@@ -52,7 +52,7 @@ Keys under `queues.<name>`:
 | Option | Default | Description |
 |--------|---------|-------------|
 | `name` | - | Required. Short name, without a dot (`high`, not `inference.high`). |
-| `priority` | - | Required. A non-zero integer; higher is served first. |
+| `priority` | - | Required. From 1 up, the sub-queue's weight; higher is served first. `0` makes it [idle-only](../concepts/queues.md#idle-only-sub-queues-priority-0): served only when the worker's other queues are empty. Negative values are rejected. |
 
 All sub-queues of a parent queue share the same deployment and the same task process.
 
@@ -152,7 +152,7 @@ Each entry of `scale_up` and `scale_down` has a `trigger` and the fields that tr
 | `queue_depth` | `scale_up` | `threshold` (required, positive), `sub_queues` (optional) |
 | `latency` | `scale_up` | `max_latency` (required, duration), `sub_queues` (optional) |
 | `schedule` | `scale_up` | `cron` (required, 5 fields), `workers` (required, positive), `duration` (optional) |
-| `idle` | `scale_down` | `timeout` (required, duration) |
+| `idle` | `scale_down` | `timeout` (required, duration), `sub_queues` (optional) |
 | `schedule` | `scale_down` | `cron` (required, 5 fields) |
 
 `sub_queues` takes short names (`[high]`) and must name sub-queues of this queue.
@@ -190,6 +190,7 @@ Keys of a rule (also used by the global `alerts.rules`):
 | `threshold` | - | `pending` only, required: number of pending tasks above which the alert fires. |
 | `when_idle` | `false` | `no_workers` only: also fire when no task is pending. |
 | `disabled` | `false` | Turns this rule type off (in a queue override: for this queue). |
+| `sub_queues` | every sub-queue | `no_workers`, `latency` and `pending` only, and only in a queue's own rules: count the pending tasks of these sub-queues (short names). Rejected in the global `alerts.rules`. |
 
 ## Global alerts block
 
