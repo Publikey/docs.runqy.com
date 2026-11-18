@@ -43,7 +43,7 @@ docker run -d --name runqy --restart unless-stopped -p 127.0.0.1:3000:3000 \
   -e RUNQY_PUBLIC_URL=https://runqy.example.com \
   -e QUEUE_WORKERS_DIR=/app/queues \
   -v /srv/runqy/queues:/app/queues:ro \
-  ghcr.io/publikey/runqy:v0.4.5
+  ghcr.io/publikey/runqy:v0.4.6
 ```
 
 Drop `REDIS_TLS` if your Redis does not use TLS. The port is published on `127.0.0.1` only, because the reverse proxy on the same host is the public entry point.

@@ -7,7 +7,7 @@ description: "How to upgrade the runqy server, workers and runqy-python, which v
 
 This page explains how to upgrade each runqy component, in which order, and which versions work together. The three components are versioned and released separately.
 
-Current releases: runqy server **v0.4.5**, runqy worker **v0.4.2**, runqy-python **0.3.1**.
+Current releases: runqy server **v0.4.6**, runqy worker **v0.4.3**, runqy-python **0.3.1**.
 
 ## Check what you are running
 
@@ -37,7 +37,7 @@ Workers older than v0.4.0 do not report their version; `runqy worker list` shows
 3. Replace the server: pull the new image tag and recreate the container, or replace the binary and restart the process.
 
     ```bash
-    docker pull ghcr.io/publikey/runqy:v0.4.5
+    docker pull ghcr.io/publikey/runqy:v0.4.6
     ```
 
 The server creates missing tables and applies its schema changes when it starts; there is no separate migration step. Back up the database first: see [Production deployment](production.md#what-to-back-up).
@@ -51,7 +51,7 @@ While the server is down, clients cannot enqueue and new workers cannot register
 Workers from v0.4.0 can install another release without recreating the machine or downloading models again:
 
 ```bash
-runqy control worker-update --version 0.4.2
+runqy control worker-update --version 0.4.3
 ```
 
 Without `--target` the command goes to every worker; add `--target <queue>` or `--target <worker_id>` to upgrade a part of the fleet first. Each worker verifies the download, waits for its running tasks, replaces its binary and restarts into it. Check the result with `runqy worker list`. Details and limits (not supported on Windows) are in [Worker control](../guides/worker-control.md).
@@ -93,6 +93,7 @@ From the release notes of each server version:
 
 | runqy server | Stated worker compatibility |
 |--------------|-----------------------------|
+| v0.4.6 | runqy worker v0.4.2; v0.4.3 for priority 0 sub-queues and `sub_queues` on the `idle` trigger |
 | v0.4.5 | runqy worker v0.4.2; no worker upgrade required |
 | v0.4.4 | runqy worker v0.4.2; no worker upgrade required |
 | v0.4.3 | runqy worker v0.4.1 |
@@ -118,6 +119,9 @@ In the other direction, runqy worker v0.4.x works with older servers, without co
 | Autoscaler drains a worker before destroying its machine | v0.4.0 | v0.4.0 | |
 | A worker whose task process is down stops taking tasks; degraded processes are retried | | v0.4.1 | |
 | Lease expiry judged on the Redis clock (a completed task never runs twice) | | v0.4.2 on every worker | |
+| Idle-only sub-queues (`priority: 0`) | v0.4.6 | v0.4.3; older workers serve them with a weight of 1 | |
+| `sub_queues` on the `idle` autoscale trigger | v0.4.6 | v0.4.3; with older workers every task counts | |
+| `sub_queues` on a queue's alert rules | v0.4.6 | | |
 | Autoscaling `sub_queues` on triggers, `min_ram_gb`, `min_vcpu` | v0.4.1 | | |
 | Autoscaler failure reasons, machine logs, cross-queue Tasks pages | v0.4.3 | | |
 | Alert `resolve_after`, autoscaling `max_boot_failures` and `runqy autoscale resume` | v0.4.4 | | |
