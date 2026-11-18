@@ -38,7 +38,7 @@ docker run -d --name runqy-worker --restart unless-stopped \
   -e RUNQY_API_KEY=<worker-api-key> \
   -e RUNQY_QUEUES=inference \
   -v runqy-deployment:/app/deployment \
-  ghcr.io/publikey/runqy-worker:v0.4.2
+  ghcr.io/publikey/runqy-worker:v0.4.3
 ```
 
 ### GPU worker
@@ -51,7 +51,7 @@ docker run -d --name runqy-worker --restart unless-stopped \
   -e RUNQY_QUEUES=inference \
   -v runqy-deployment:/app/deployment \
   -v runqy-cache:/root/.cache \
-  ghcr.io/publikey/runqy-worker:v0.4.2-inference
+  ghcr.io/publikey/runqy-worker:v0.4.3-inference
 ```
 
 The `-inference` image is based on `pytorch/pytorch:2.11.0-cuda12.8-cudnn9-runtime`. The task's virtualenv is created with access to the system packages, so PyTorch is not installed a second time. The image variants are described in [Installation](../getting-started/installation.md#docker-images).
@@ -72,7 +72,7 @@ docker run -d --name runqy-worker --stop-timeout 330 \
   -e RUNQY_API_KEY=<worker-api-key> \
   -e RUNQY_QUEUES=inference \
   -v runqy-deployment:/app/deployment \
-  ghcr.io/publikey/runqy-worker:v0.4.2
+  ghcr.io/publikey/runqy-worker:v0.4.3
 ```
 
 To stop a worker without interrupting anything, drain it first: see [Worker control](worker-control.md).
@@ -84,7 +84,7 @@ Install the [host prerequisites](../getting-started/installation.md#host-prerequ
 ```bash
 sudo useradd --system --create-home --home-dir /var/lib/runqy-worker --shell /usr/sbin/nologin runqy
 sudo mkdir -p /var/lib/runqy-worker/bin
-curl -fsSL https://github.com/Publikey/runqy-worker/releases/download/v0.4.2/runqy-worker_0.4.2_linux_amd64.tar.gz \
+curl -fsSL https://github.com/Publikey/runqy-worker/releases/download/v0.4.3/runqy-worker_0.4.2_linux_amd64.tar.gz \
   | sudo tar xz -C /var/lib/runqy-worker/bin runqy-worker
 sudo chown -R runqy:runqy /var/lib/runqy-worker
 ```
@@ -163,7 +163,7 @@ docker run -d --name runqy-worker \
   -e RUNQY_GIT_SSH_KEY=/run/secrets/git_key \
   -v /path/to/deploy_key:/run/secrets/git_key:ro \
   -v runqy-deployment:/app/deployment \
-  ghcr.io/publikey/runqy-worker:v0.4.2
+  ghcr.io/publikey/runqy-worker:v0.4.3
 ```
 
 The worker runs ssh with `StrictHostKeyChecking=no`.
@@ -227,7 +227,7 @@ Workers from v0.4.0 can be updated without recreating the machine, from the serv
 
 ```bash
 runqy control code-update --target inference      # latest commit of the task repo
-runqy control worker-update --version 0.4.2       # another runqy-worker release
+runqy control worker-update --version 0.4.3       # another runqy-worker release
 ```
 
 Both wait for running tasks to finish. See [Worker control](worker-control.md) for details and [Upgrading and compatibility](../operate/upgrading.md) for which versions work together.

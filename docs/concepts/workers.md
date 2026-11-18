@@ -74,7 +74,7 @@ The published images already contain these:
 | `ghcr.io/publikey/runqy-worker:<version>` (same as `<version>-minimal`) | Alpine 3.19 | git, curl, Python 3, pip. linux/amd64 and linux/arm64. |
 | `ghcr.io/publikey/runqy-worker:<version>-inference` (also tagged `inference`) | `pytorch/pytorch:2.11.0-cuda12.8-cudnn9-runtime` | git, PyTorch with CUDA, `uv`, C/C++ build tools. linux/amd64 only. |
 
-`<version>` is the release tag, for example `v0.4.2`.
+`<version>` is the release tag, for example `v0.4.3`.
 
 By default the virtualenv is created with `--system-site-packages`, so packages already installed in the image (PyTorch in the inference image) are reused instead of downloaded again. Set `use_system_site_packages` to `false` for an isolated virtualenv.
 

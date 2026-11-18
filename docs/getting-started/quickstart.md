@@ -152,7 +152,7 @@ docker compose -f docker-compose.quickstart.yml exec runqy-server runqy worker l
 
 ```text
 WORKER_ID       STATUS   VERSION  QUEUES                          CONCURRENCY  LAST_BEAT  STALE
-12f7363acae0:1  running  0.4.2    quickstart-longrunning.defa...  1            3s         no
+12f7363acae0:1  running  0.4.3    quickstart-longrunning.defa...  1            3s         no
 ```
 
 ## What just happened

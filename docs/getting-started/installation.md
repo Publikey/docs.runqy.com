@@ -17,14 +17,14 @@ This page lists every way to install the three runqy components and the platform
 
 The `runqy` binary is both the server (`runqy serve`) and the command-line client. Install it on your own machine too if you want to manage a remote server from a terminal.
 
-Current releases: runqy server v0.4.5, runqy worker v0.4.2, runqy-python 0.3.1. See [Upgrading and compatibility](../operate/upgrading.md) for which versions work together.
+Current releases: runqy server v0.4.6, runqy worker v0.4.3, runqy-python 0.3.1. See [Upgrading and compatibility](../operate/upgrading.md) for which versions work together.
 
 ## Server
 
 ### Docker image
 
 ```bash
-docker pull ghcr.io/publikey/runqy:v0.4.5
+docker pull ghcr.io/publikey/runqy:v0.4.6
 ```
 
 The image is published for `linux/amd64` and `linux/arm64`, with the tags `v<version>` and `latest`. It contains only the `runqy` binary, runs as a non-root user, listens on port 3000 and starts `runqy serve`.
@@ -37,7 +37,7 @@ docker run -d --name runqy -p 3000:3000 \
   -e REDIS_PASSWORD=<redis-password> \
   -e RUNQY_API_KEY=dev-api-key \
   -e RUNQY_USE_SQLITE=true \
-  ghcr.io/publikey/runqy:v0.4.5
+  ghcr.io/publikey/runqy:v0.4.6
 ```
 
 For a real deployment, use PostgreSQL and read [Production deployment](../operate/production.md). All settings are in the [server configuration reference](../reference/server-config.md).
@@ -55,7 +55,7 @@ The script downloads the latest release archive for your OS and architecture fro
     The binary is installed in `/usr/local/bin`. The script calls `sudo` if that directory is not writable. Set `INSTALL_DIR` to install elsewhere and `VERSION` (with the `v` prefix) to pin a release:
 
     ```bash
-    curl -fsSL https://raw.githubusercontent.com/publikey/runqy/main/install.sh | VERSION=v0.4.5 INSTALL_DIR="$HOME/.local/bin" sh
+    curl -fsSL https://raw.githubusercontent.com/publikey/runqy/main/install.sh | VERSION=v0.4.6 INSTALL_DIR="$HOME/.local/bin" sh
     ```
 
 === "Windows"
@@ -75,7 +75,7 @@ Archives are named `runqy_<version>_<os>_<arch>.tar.gz` (`.zip` on Windows) and 
 === "Linux/macOS"
 
     ```bash
-    VERSION=0.4.5
+    VERSION=0.4.6
     OS=linux      # or darwin
     ARCH=amd64    # or arm64
     curl -fsSLO "https://github.com/Publikey/runqy/releases/download/v${VERSION}/runqy_${VERSION}_${OS}_${ARCH}.tar.gz"
@@ -90,7 +90,7 @@ Archives are named `runqy_<version>_<os>_<arch>.tar.gz` (`.zip` on Windows) and 
 === "Windows"
 
     ```powershell
-    $Version = "0.4.5"
+    $Version = "0.4.6"
     Invoke-WebRequest -Uri "https://github.com/Publikey/runqy/releases/download/v$Version/runqy_${Version}_windows_amd64.zip" -OutFile runqy.zip
     Expand-Archive -Path runqy.zip -DestinationPath .\runqy
     .\runqy\runqy.exe --version
@@ -120,8 +120,8 @@ Both variants are published under `ghcr.io/publikey/runqy-worker`. They start `r
 | `v<version>-inference`, `inference` | `pytorch/pytorch:2.11.0-cuda12.8-cudnn9-runtime` (PyTorch 2.11.0, CUDA 12.8, cuDNN 9), git, curl, wget, build tools (`build-essential`, `cmake`, `ninja-build`), `uv` | `linux/amd64` | GPU inference; PyTorch is already installed and reused by the task's virtualenv |
 
 ```bash
-docker pull ghcr.io/publikey/runqy-worker:v0.4.2            # minimal
-docker pull ghcr.io/publikey/runqy-worker:v0.4.2-inference  # PyTorch + CUDA
+docker pull ghcr.io/publikey/runqy-worker:v0.4.3            # minimal
+docker pull ghcr.io/publikey/runqy-worker:v0.4.3-inference  # PyTorch + CUDA
 ```
 
 Pin a version tag in production: `latest` and `inference` move with each release.
@@ -151,7 +151,7 @@ Complete `docker run` commands, including GPU access and volumes, are in [Deploy
 Archives are named `runqy-worker_<version>_<os>_<arch>.tar.gz` (`.zip` on Windows). They also contain `config.yml.example`.
 
 ```bash
-VERSION=0.4.2
+VERSION=0.4.3
 curl -fsSLO "https://github.com/Publikey/runqy-worker/releases/download/v${VERSION}/runqy-worker_${VERSION}_linux_amd64.tar.gz"
 curl -fsSLO "https://github.com/Publikey/runqy-worker/releases/download/v${VERSION}/checksums.txt"
 sha256sum -c --ignore-missing checksums.txt
@@ -200,7 +200,7 @@ runqy --version
 ```
 
 ```text
-runqy version 0.4.5 (commit: <commit>, built: <date>)
+runqy version 0.4.6 (commit: <commit>, built: <date>)
 ```
 
 ```bash
@@ -208,7 +208,7 @@ runqy-worker -version
 ```
 
 ```text
-runqy-worker 0.4.2
+runqy-worker 0.4.3
   commit:  <commit>
   built:   <date>
 ```
